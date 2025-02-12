@@ -51,7 +51,12 @@
   "keywords": [
     "react-native",
     "ios",
-    "android"
+    "android",
+    "image",
+    "image editor",
+    "photo",
+    "crop",
+    "filter"
   ],
   "repository": {
     "type": "git",
