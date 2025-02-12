@@ -37,14 +37,16 @@
     "!**/.*"
   ],
   "scripts": {
-    "example": "yarn workspace @antropia/sorolla-example",
-    "test": "jest",
-    "typecheck": "tsc",
-    "lint": "eslint \"**/*.{js,ts,tsx}\"",
-    "lint:fix": "eslint \"**/*.{js,ts,tsx}\" --fix",
     "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
+    "example": "npm run start --workspace example",
+    "lint": "tsc --noEmit && eslint \"**/*.{js,ts,tsx}\" && npm run lint --workspace example",
+    "lint:fix": "eslint \"**/*.{js,ts,tsx}\" --fix",
     "prepare": "bob build",
-    "release": "release-it"
+    "release": "release-it",
+    "release:patch": "release-it --increment=patch",
+    "release:minor": "release-it --increment=minor",
+    "release:major": "release-it --increment=major",
+    "test": "jest"
   },
   "keywords": [
     "react-native",
@@ -87,7 +89,7 @@
     "react-native": "0.77.0",
     "react-native-builder-bob": "^0.37.0",
     "release-it": "^18.1.2",
-    "turbo": "^1.10.7",
+    "turbo": "^2.4.1",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.24.0"
   },
@@ -101,7 +103,7 @@
   "workspaces": [
     "example"
   ],
-  "packageManager": "yarn@3.6.1",
+  "packageManager": "npm@11.1.0",
   "jest": {
     "preset": "react-native",
     "modulePathIgnorePatterns": [
