@@ -1,5 +1,5 @@
-import { Text, View, StyleSheet } from 'react-native';
 import { multiply } from '@antropia/sorolla';
+import { StyleSheet, Text, View } from 'react-native';
 
 const result = multiply(3, 7);
 
@@ -13,8 +13,8 @@ export default function App() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     alignItems: 'center',
+    flex: 1,
     justifyContent: 'center',
   },
 });
