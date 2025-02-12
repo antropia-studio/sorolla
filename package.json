@@ -58,7 +58,7 @@
     "url": "git+https://github.com/antropia-studio/sorolla.git"
   },
   "author": "Antropia <oss@antropia.studio> (https://antropia.studio)",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/antropia-studio/sorolla/issues"
   },
