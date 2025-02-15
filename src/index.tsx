@@ -1,5 +1,2 @@
-import Sorolla from './NativeSorolla';
-
-export function multiply(a: number, b: number): number {
-  return Sorolla.multiply(a, b);
-}
+export { default as SorollaView } from './SorollaViewNativeComponent';
+export * from './SorollaViewNativeComponent';

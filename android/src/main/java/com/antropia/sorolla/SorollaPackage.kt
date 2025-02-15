@@ -1,33 +1,19 @@
 package com.antropia.sorolla
 
-import com.facebook.react.BaseReactPackage
+import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.NativeModule
 import com.facebook.react.bridge.ReactApplicationContext
-import com.facebook.react.module.model.ReactModuleInfo
-import com.facebook.react.module.model.ReactModuleInfoProvider
-import java.util.HashMap
+import com.facebook.react.uimanager.ViewManager
+import java.util.ArrayList
 
-class SorollaPackage : BaseReactPackage() {
-  override fun getModule(name: String, reactContext: ReactApplicationContext): NativeModule? {
-    return if (name == SorollaModule.NAME) {
-      SorollaModule(reactContext)
-    } else {
-      null
-    }
+class SorollaViewPackage : ReactPackage {
+  override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> {
+    val viewManagers: MutableList<ViewManager<*, *>> = ArrayList()
+    viewManagers.add(SorollaViewManager())
+    return viewManagers
   }
 
-  override fun getReactModuleInfoProvider(): ReactModuleInfoProvider {
-    return ReactModuleInfoProvider {
-      val moduleInfos: MutableMap<String, ReactModuleInfo> = HashMap()
-      moduleInfos[SorollaModule.NAME] = ReactModuleInfo(
-        SorollaModule.NAME,
-        SorollaModule.NAME,
-        false,  // canOverrideExistingModule
-        false,  // needsEagerInit
-        false,  // isCxxModule
-        true // isTurboModule
-      )
-      moduleInfos
-    }
+  override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> {
+    return emptyList()
   }
 }

@@ -77,7 +77,7 @@
     "@eslint/js": "^9.20.0",
     "@evilmartians/lefthook": "^1.10.10",
     "@react-native-community/cli": "15.0.1",
-    "@react-native/eslint-config": "^0.77.0",
+    "@react-native/eslint-config": "^0.77.1",
     "@release-it/conventional-changelog": "^10.0.0",
     "@types/jest": "^29.5.14",
     "@types/react": "^18.3.18",
@@ -86,17 +86,19 @@
     "eslint": "^9.20.1",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-json-files": "^4.4.2",
-    "eslint-plugin-perfectionist": "^4.8.0",
+    "eslint-plugin-perfectionist": "^4.9.0",
     "eslint-plugin-prettier": "^5.2.3",
     "jest": "^29.7.0",
-    "prettier": "^3.5.0",
-    "react": "18.3.1",
-    "react-native": "0.77.0",
+    "prettier": "^3.5.1",
     "react-native-builder-bob": "^0.37.0",
     "release-it": "^18.1.2",
-    "turbo": "^2.4.1",
+    "turbo": "^2.4.2",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.24.0"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-native": "^0.77.1"
   },
   "resolutions": {
     "@types/react": "^18.2.44"
@@ -105,10 +107,7 @@
     "react": "*",
     "react-native": "*"
   },
-  "workspaces": [
-    "example"
-  ],
-  "packageManager": "npm@11.1.0",
+  "packageManager": "pnpm@10.4.0",
   "jest": {
     "preset": "react-native",
     "modulePathIgnorePatterns": [
@@ -172,8 +171,8 @@
     ]
   },
   "codegenConfig": {
-    "name": "RNSorollaSpec",
-    "type": "modules",
+    "name": "RNSorollaViewSpec",
+    "type": "components",
     "jsSrcsDir": "src",
     "outputDir": {
       "ios": "ios/generated",
@@ -185,7 +184,7 @@
     "includesGeneratedCode": true
   },
   "create-react-native-library": {
-    "type": "turbo-module",
+    "type": "fabric-view",
     "languages": "kotlin-objc",
     "version": "0.48.1"
   }
