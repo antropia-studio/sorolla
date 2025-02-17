@@ -38,9 +38,11 @@
   ],
   "scripts": {
     "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
-    "example": "npm run start --workspace example",
-    "lint": "tsc --noEmit && eslint \"**/*.{js,ts,tsx}\" && npm run lint --workspace example",
-    "lint:fix": "eslint \"**/*.{js,ts,tsx}\" --fix",
+    "example": "pnpm --filter example run start",
+    "lint": "pnpm run lint:types && pnpm run lint:eslint",
+    "lint:types": "tsc --noEmit",
+    "lint:eslint": "eslint \"**/*.{js,ts,tsx}\"",
+    "lint:eslint:fix": "eslint \"**/*.{js,ts,tsx}\" --fix",
     "prepare": "bob build",
     "release": "release-it",
     "release:patch": "release-it --increment=patch",
@@ -107,7 +109,7 @@
     "react": "*",
     "react-native": "*"
   },
-  "packageManager": "pnpm@10.4.0",
+  "packageManager": "pnpm@10.4.1",
   "jest": {
     "preset": "react-native",
     "modulePathIgnorePatterns": [
