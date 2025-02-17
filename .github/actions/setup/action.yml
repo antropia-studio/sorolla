@@ -4,33 +4,17 @@ description: Setup Node.js and install dependencies
 runs:
   using: composite
   steps:
+    - name: Install pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        run_install: false
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version-file: .nvmrc
-
-    - name: Restore dependencies
-      id: npm-cache
-      uses: actions/cache/restore@v4
-      with:
-        path: |
-          **/node_modules
-          .npm/install-state.gz
-        key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}-${{ hashFiles('**/package.json', '!node_modules/**') }}
-        restore-keys: |
-          ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
-          ${{ runner.os }}-npm-
+        cache: 'pnpm'
 
     - name: Install dependencies
-      if: steps.npm-cache.outputs.cache-hit != 'true'
-      run: npm install --immutable
+      run: pnpm install
       shell: bash
-
-    - name: Cache dependencies
-      if: steps.npm-cache.outputs.cache-hit != 'true'
-      uses: actions/cache/save@v4
-      with:
-        path: |
-          **/node_modules
-          .npm/install-state.gz
-        key: ${{ steps.npm-cache.outputs.cache-primary-key }}

@@ -21,7 +21,7 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Lint files
-        run: npm run lint
+        run: pnpm run lint
 
   test:
     runs-on: ubuntu-latest
@@ -33,7 +33,7 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Run unit tests
-        run: npm test --maxWorkers=2 --coverage
+        run: pnpm test --maxWorkers=2 --coverage
 
   build-library:
     runs-on: ubuntu-latest
@@ -45,7 +45,7 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Build package
-        run: npm run prepare
+        run: pnpm run prepare
 
   build-android:
     runs-on: ubuntu-latest
