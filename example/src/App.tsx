@@ -4,7 +4,8 @@ import { StyleSheet, View } from 'react-native';
 export default function App() {
   return (
     <View style={styles.container}>
-      <SorollaView color="#ffa852" style={styles.box} />
+      {/* eslint-disable-next-line @typescript-eslint/no-require-imports */}
+      <SorollaView source={require('cali.jpg')} style={styles.box} />
     </View>
   );
 }

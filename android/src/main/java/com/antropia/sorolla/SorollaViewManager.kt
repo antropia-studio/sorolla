@@ -12,13 +12,9 @@ import com.facebook.react.viewmanagers.SorollaViewManagerDelegate
 @ReactModule(name = SorollaViewManager.NAME)
 class SorollaViewManager : SimpleViewManager<SorollaView>(),
   SorollaViewManagerInterface<SorollaView> {
-  private val mDelegate: ViewManagerDelegate<SorollaView>
+  private val mDelegate: ViewManagerDelegate<SorollaView> = SorollaViewManagerDelegate(this)
 
-  init {
-    mDelegate = SorollaViewManagerDelegate(this)
-  }
-
-  override fun getDelegate(): ViewManagerDelegate<SorollaView>? {
+  override fun getDelegate(): ViewManagerDelegate<SorollaView> {
     return mDelegate
   }
 
@@ -30,9 +26,9 @@ class SorollaViewManager : SimpleViewManager<SorollaView>(),
     return SorollaView(context)
   }
 
-  @ReactProp(name = "color")
-  override fun setColor(view: SorollaView?, color: String?) {
-    view?.setBackgroundColor(Color.parseColor(color))
+  @ReactProp(name = "source")
+  override fun setSource(view: SorollaView?, value: Int) {
+    view?.setBackgroundColor(Color.parseColor("#FF9529"))
   }
 
   companion object {

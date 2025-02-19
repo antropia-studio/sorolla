@@ -38,7 +38,8 @@
   ],
   "scripts": {
     "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
-    "example": "pnpm --filter example run start",
+    "codegen": "react-native codegen",
+    "example": "pnpm --filter @antropia/sorolla-example run start",
     "lint": "pnpm run lint:types && pnpm run lint:eslint",
     "lint:types": "tsc --noEmit",
     "lint:eslint": "eslint \"**/*.{js,ts,tsx}\"",
@@ -79,7 +80,7 @@
     "@eslint/js": "^9.20.0",
     "@evilmartians/lefthook": "^1.10.10",
     "@react-native-community/cli": "15.0.1",
-    "@react-native/eslint-config": "^0.77.1",
+    "@react-native/eslint-config": "^0.78.0",
     "@release-it/conventional-changelog": "^10.0.0",
     "@types/jest": "^29.5.14",
     "@types/react": "^18.3.18",
@@ -96,7 +97,7 @@
     "release-it": "^18.1.2",
     "turbo": "^2.4.2",
     "typescript": "^5.7.3",
-    "typescript-eslint": "^8.24.0"
+    "typescript-eslint": "^8.24.1"
   },
   "dependencies": {
     "react": "^18.3.1",
@@ -174,7 +175,7 @@
   },
   "codegenConfig": {
     "name": "RNSorollaViewSpec",
-    "type": "components",
+    "type": "all",
     "jsSrcsDir": "src",
     "outputDir": {
       "ios": "ios/generated",
@@ -183,11 +184,21 @@
     "android": {
       "javaPackageName": "com.antropia.sorolla"
     },
+    "ios": {
+      "componentProvider": {
+        "SorollaView": "SorollaView"
+      }
+    },
     "includesGeneratedCode": true
   },
   "create-react-native-library": {
     "type": "fabric-view",
     "languages": "kotlin-objc",
     "version": "0.48.1"
+  },
+  "pnpm": {
+    "ignoredBuiltDependencies": [
+      "@evilmartians/lefthook"
+    ]
   }
 }
