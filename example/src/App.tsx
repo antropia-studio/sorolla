@@ -5,7 +5,7 @@ export default function App() {
   return (
     <View style={styles.container}>
       {/* eslint-disable-next-line @typescript-eslint/no-require-imports */}
-      <SorollaView source={require('cali.jpg')} style={styles.box} />
+      <SorollaView source={require('./cali.jpg')} style={styles.box} />
     </View>
   );
 }
