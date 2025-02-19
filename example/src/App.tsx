@@ -1,20 +1,41 @@
 import { SorollaView } from '@antropia/sorolla';
-import { StyleSheet, View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { launchImageLibrary } from 'react-native-image-picker';
 
 export default function App() {
+  const [imageUri, setImageUri] = useState<string | undefined>();
+
   return (
     <View style={styles.container}>
-      {/* eslint-disable-next-line @typescript-eslint/no-require-imports */}
-      <SorollaView source={require('./cali.jpg')} style={styles.box} />
+      {!imageUri && (
+        <Pressable
+          onPress={async () => {
+            const response = await launchImageLibrary({
+              mediaType: 'photo',
+              selectionLimit: 1,
+            });
+
+            const assets = response.assets ?? [];
+
+            if (assets.length > 0) {
+              setImageUri(assets[0]!.uri);
+            }
+          }}
+        >
+          <Text>Select image</Text>
+        </Pressable>
+      )}
+      {imageUri && <SorollaView style={styles.box} uri={imageUri} />}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   box: {
-    height: 60,
+    height: '100%',
     marginVertical: 20,
-    width: 60,
+    width: '100%',
   },
   container: {
     alignItems: 'center',
