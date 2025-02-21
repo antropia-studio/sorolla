@@ -21,7 +21,7 @@
       android:scaleType="matrix"
       tools:srcCompat="@tools:sample/backgrounds/scenic" />
 
-    <com.antropia.sorolla.CroppingOverlayView
+    <com.antropia.sorolla.view.overlay.CroppingOverlayView
       android:id="@+id/cropping_overlay"
       android:layout_width="match_parent"
       android:layout_height="match_parent" />

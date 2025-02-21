@@ -1,4 +1,4 @@
-package com.antropia.sorolla.view
+package com.antropia.sorolla.util
 
 import android.view.View
 

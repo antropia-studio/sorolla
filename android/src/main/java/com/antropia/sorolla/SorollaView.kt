@@ -11,8 +11,9 @@ import android.view.LayoutInflater
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.ImageView
 import android.widget.LinearLayout
-import com.antropia.sorolla.view.paddingHorizontal
-import com.antropia.sorolla.view.paddingVertical
+import com.antropia.sorolla.util.paddingHorizontal
+import com.antropia.sorolla.util.paddingVertical
+import com.antropia.sorolla.view.overlay.CroppingOverlayView
 import kotlin.math.min
 
 class SorollaView : LinearLayout {
@@ -120,7 +121,7 @@ class SorollaView : LinearLayout {
     // Animate between current and target matrix
     val currentMatrix = Matrix(imageView.imageMatrix)
     val startTime = System.currentTimeMillis()
-    val duration = 300L // Animation duration in milliseconds
+    val duration = 500L // Animation duration in milliseconds
     val interpolator = AccelerateDecelerateInterpolator()
 
     val matrixEvaluator = object : Runnable {
