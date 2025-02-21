@@ -2,8 +2,10 @@ package com.antropia.sorolla
 
 import android.content.Context
 import android.graphics.Matrix
-import android.graphics.RectF
+import android.graphics.PointF
+import android.graphics.Rect
 import android.net.Uri
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.AttributeSet
@@ -17,8 +19,10 @@ import com.antropia.sorolla.view.overlay.CroppingOverlayView
 import kotlin.math.min
 
 class SorollaView : LinearLayout {
+  private val gestureExclusionRect = Rect()
   private val imageView: ImageView
   private val croppingOverlayView: CroppingOverlayView
+  private var originalTranslation: PointF = PointF()
   private var originalImageScale: Float = 1f
   private var originalMatrix: Matrix? = null
   private val handler = Handler(Looper.getMainLooper())
@@ -39,16 +43,23 @@ class SorollaView : LinearLayout {
     setupCropListener()
   }
 
+  override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
+    super.onLayout(changed, l, t, r, b)
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+      gestureExclusionRect.set(l, t, r, b)
+      systemGestureExclusionRects = listOf(gestureExclusionRect)
+    }
+  }
+
   private fun setupCropListener() {
-    croppingOverlayView.setOnCropChangeListener { cropRect ->
-      // Cancel any pending updates
+    croppingOverlayView.setOnCropChangeListener { topLeft, zoomRatio ->
       pendingCropUpdate?.let { handler.removeCallbacks(it) }
 
-      // Schedule new update with delay
       pendingCropUpdate = Runnable {
-        animateImageToCrop(cropRect)
+        animateImageToCrop(topLeft, zoomRatio)
       }.also {
-        handler.postDelayed(it, 500) // 500ms delay
+        handler.postDelayed(it, 0)
       }
     }
   }
@@ -81,42 +92,24 @@ class SorollaView : LinearLayout {
     val dy = (viewHeight - drawableHeight * scale) / 2f
 
     val matrix = Matrix()
-    matrix.setScale(scale, scale)
+    matrix.postScale(scale, scale)
     matrix.postTranslate(dx, dy)
 
     imageView.imageMatrix = matrix
     originalImageScale = scale
+    originalTranslation = PointF(dx, dy)
     originalMatrix = Matrix(matrix)
 
     croppingOverlayView.setImageView(imageView)
   }
 
-  private fun animateImageToCrop(cropRect: RectF) {
-    val drawable = imageView.drawable ?: return
+  private fun animateImageToCrop(topLeft: PointF, zoomRatio: Float) {
     val originalMatrix = originalMatrix ?: return
 
-    val viewWidth = imageView.width - imageView.paddingHorizontal
-    val viewHeight = imageView.height - imageView.paddingVertical
-    val drawableWidth = drawable.intrinsicWidth.toFloat()
-    val drawableHeight = drawable.intrinsicHeight.toFloat()
-
-    // Calculate the target matrix
     val targetMatrix = Matrix(originalMatrix)
 
-    // Calculate scale to fit the cropped area
-    val scaleX = 1 / cropRect.width()
-    val scaleY = 1 / cropRect.height()
-    val scale = min(scaleX, scaleY)
-
-//    val tx =
-//      -cropRect.left * scaledWidth + (viewWidth - scaledWidth * cropRect.width()) / 2f + imageView.paddingLeft
-//    val ty =
-//      -cropRect.top * scaledHeight + (viewHeight - scaledHeight * cropRect.height()) / 2f + imageView.paddingTop
-    val tx = viewWidth * cropRect.left
-    val ty = viewHeight * cropRect.top
-
-    targetMatrix.postScale(scale, scale)
-    targetMatrix.postTranslate(-tx, -ty)
+    targetMatrix.postScale(zoomRatio, zoomRatio, originalTranslation.x, originalTranslation.y)
+    targetMatrix.postTranslate(topLeft.x, topLeft.y)
 
     // Animate between current and target matrix
     val currentMatrix = Matrix(imageView.imageMatrix)

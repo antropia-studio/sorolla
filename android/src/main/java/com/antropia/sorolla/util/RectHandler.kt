@@ -2,6 +2,10 @@ package com.antropia.sorolla.util
 
 import android.graphics.RectF
 
+enum class Axis {
+  HORIZONTAL,
+  VERTICAL
+}
 
 interface RectHandler {
   /**
@@ -9,34 +13,43 @@ interface RectHandler {
    * The resulting rect preserves the aspect ratio of the operated rect.
    */
   fun RectF.zoomToWorkingRect(workingRect: RectF): RectF {
-    /**
-     * Just a reminder for future readers: aspectRatio = W / H
-     * That means if we want to calculate the new width or height of a rect, use the following
-     * formulas:
-     * W' = H' * aspectRatio
-     * H' = W' / aspectRatio
-     */
-    val aspectRatio = this.width() / this.height()
+    val aspectRatio = AspectRatio(width(), height())
 
+    val leadingAxis = getLeadingAxisForZoom(workingRect)
+
+    val midX = workingRect.centerX()
+    val midY = workingRect.centerY()
+
+    val zoomedWidth = aspectRatio.calculateWidth(workingRect.height())
+    val zoomedHeight = aspectRatio.calculateHeight(workingRect.width())
+
+    val zoomedLeft = midX - zoomedWidth / 2f
+    val zoomedRight = midX + zoomedWidth / 2f
+    val zoomedTop = midY - zoomedHeight / 2f
+    val zoomedBottom = midY + zoomedHeight / 2f
+
+    return when (leadingAxis) {
+      Axis.HORIZONTAL -> RectF(workingRect.left, zoomedTop, workingRect.right, zoomedBottom)
+      Axis.VERTICAL -> RectF(zoomedLeft, workingRect.top, zoomedRight, workingRect.bottom)
+    }
+  }
+
+  /**
+   * Returns the leading axis if zoomed in.
+   * The leading axis is the one that will restrict how much we can zoom in the target rect to fit
+   * inside the working area.
+   */
+  fun RectF.getLeadingAxisForZoom(workingRect: RectF): Axis {
     /**
      * Here we decide what's the "leading" axis. We calculate the horizontal zooming ratio
      * and calculate what would the new height be if we zoom in that much. If the new height fits
      * inside the working area then the leading axis is X, otherwise is Y
      */
     val horizontalZoomRatio = workingRect.width() / this.width()
-    val isLeadingHorizontalAxis = this.height() * horizontalZoomRatio < workingRect.height()
 
-    val midX = workingRect.centerX()
-    val midY = workingRect.centerY()
-
-    val adaptedLeft = midX - (workingRect.height() * aspectRatio) / 2f
-    val adaptedRight = midX + (workingRect.height() * aspectRatio) / 2f
-    val adaptedTop = midY - (workingRect.width() / aspectRatio) / 2f
-    val adaptedBottom = midY + (workingRect.width() / aspectRatio) / 2f
-
-    return if (isLeadingHorizontalAxis)
-      RectF(workingRect.left, adaptedTop, workingRect.right, adaptedBottom)
+    return if (this.height() * horizontalZoomRatio < workingRect.height())
+      Axis.HORIZONTAL
     else
-      RectF(adaptedLeft, workingRect.top, adaptedRight, workingRect.bottom)
+      Axis.VERTICAL
   }
 }

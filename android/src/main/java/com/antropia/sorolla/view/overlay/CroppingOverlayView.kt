@@ -3,6 +3,7 @@ package com.antropia.sorolla.view.overlay
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.PointF
 import android.graphics.RectF
 import android.os.Handler
 import android.os.Looper
@@ -12,8 +13,12 @@ import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.ImageView
 import androidx.core.animation.doOnEnd
+import androidx.core.view.marginLeft
+import androidx.core.view.marginTop
 import com.antropia.sorolla.util.Interpolator
 import com.antropia.sorolla.util.RectHandler
+import com.antropia.sorolla.util.marginHorizontal
+import com.antropia.sorolla.util.marginVertical
 import com.antropia.sorolla.util.paddingHorizontal
 import com.antropia.sorolla.util.paddingVertical
 import com.facebook.react.uimanager.PixelUtil.dpToPx
@@ -28,14 +33,19 @@ sealed interface AnimationState {
   data class Running(var rect: RectF) : AnimationState
 }
 
+fun interface OnCropAreaChangeListener {
+  fun onChange(topLeft: PointF, zoomRatio: Float)
+}
+
 class CroppingOverlayView : View, RectHandler, Interpolator {
+  private var workingRect: RectF? = null
   private var imageRect: RectF? = null
   private var cropRect: RectF? = null
   private var activeCorner: Corner? = null
   private var lastTouchX = 0f
   private var lastTouchY = 0f
   private var animationState: AnimationState = AnimationState.Idle
-  private var onCropChangeListener: ((RectF) -> Unit)? = null
+  private var onCropChangeListener: OnCropAreaChangeListener? = null
   private val cropUpdateHandler = Handler(Looper.getMainLooper())
   private var pendingCropUpdate: Runnable? = null
   private val renderer = Renderer(this)
@@ -54,7 +64,7 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
     defStyleAttr
   )
 
-  fun setOnCropChangeListener(listener: (RectF) -> Unit) {
+  fun setOnCropChangeListener(listener: OnCropAreaChangeListener) {
     onCropChangeListener = listener
   }
 
@@ -65,9 +75,9 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
     val imageHeight = imageView.drawable.intrinsicHeight.toFloat()
 
     val availableWidth =
-      (imageView.width - imageView.paddingHorizontal).toFloat()
+      (imageView.width - imageView.paddingHorizontal - imageView.marginHorizontal).toFloat()
     val availableHeight =
-      (imageView.height - imageView.paddingVertical).toFloat()
+      (imageView.height - imageView.paddingVertical - imageView.marginVertical).toFloat()
 
     val scale = min(
       availableWidth / imageWidth,
@@ -77,9 +87,15 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
     val scaledWidth = imageWidth * scale
     val scaledHeight = imageHeight * scale
 
-    val left = imageView.paddingLeft + (availableWidth - scaledWidth) / 2
-    val top = imageView.paddingTop + (availableHeight - scaledHeight) / 2
+    val left = imageView.marginLeft + imageView.paddingLeft + (availableWidth - scaledWidth) / 2
+    val top = imageView.marginTop + imageView.paddingTop + (availableHeight - scaledHeight) / 2
 
+    workingRect = RectF(
+      imageView.marginLeft + imageView.paddingLeft.toFloat(),
+      imageView.marginTop + imageView.paddingTop.toFloat(),
+      availableWidth + imageView.marginLeft + imageView.paddingLeft.toFloat(),
+      availableHeight + imageView.marginTop + imageView.paddingTop.toFloat()
+    )
     imageRect = RectF(left, top, left + scaledWidth, top + scaledHeight)
     cropRect = RectF(imageRect)
     invalidate()
@@ -104,12 +120,12 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
           lastTouchX = event.x
           lastTouchY = event.y
           invalidate()
-          notifyCropChange()
           return true
         }
       }
 
       MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+        notifyCropChange()
         activeCorner = null
       }
     }
@@ -141,28 +157,28 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
   ): Boolean = abs(touchX - cornerX) <= touchArea && abs(touchY - cornerY) <= touchArea
 
   private fun updateCropRect(dx: Float, dy: Float) {
-    val rect = cropRect ?: return
-    val imageR = imageRect ?: return
+    val cRect = cropRect ?: return
+    val iRect = imageRect ?: return
 
     when (activeCorner) {
       Corner.TOP_LEFT -> {
-        rect.left = (rect.left + dx).coerceIn(imageR.left, rect.right - CORNER_LENGTH)
-        rect.top = (rect.top + dy).coerceIn(imageR.top, rect.bottom - CORNER_LENGTH)
+        cRect.left = (cRect.left + dx).coerceIn(iRect.left, cRect.right - CORNER_LENGTH)
+        cRect.top = (cRect.top + dy).coerceIn(iRect.top, cRect.bottom - CORNER_LENGTH)
       }
 
       Corner.TOP_RIGHT -> {
-        rect.right = (rect.right + dx).coerceIn(rect.left + CORNER_LENGTH, imageR.right)
-        rect.top = (rect.top + dy).coerceIn(imageR.top, rect.bottom - CORNER_LENGTH)
+        cRect.right = (cRect.right + dx).coerceIn(cRect.left + CORNER_LENGTH, iRect.right)
+        cRect.top = (cRect.top + dy).coerceIn(iRect.top, cRect.bottom - CORNER_LENGTH)
       }
 
       Corner.BOTTOM_LEFT -> {
-        rect.left = (rect.left + dx).coerceIn(imageR.left, rect.right - CORNER_LENGTH)
-        rect.bottom = (rect.bottom + dy).coerceIn(rect.top + CORNER_LENGTH, imageR.bottom)
+        cRect.left = (cRect.left + dx).coerceIn(iRect.left, cRect.right - CORNER_LENGTH)
+        cRect.bottom = (cRect.bottom + dy).coerceIn(cRect.top + CORNER_LENGTH, iRect.bottom)
       }
 
       Corner.BOTTOM_RIGHT -> {
-        rect.right = (rect.right + dx).coerceIn(rect.left + CORNER_LENGTH, imageR.right)
-        rect.bottom = (rect.bottom + dy).coerceIn(rect.top + CORNER_LENGTH, imageR.bottom)
+        cRect.right = (cRect.right + dx).coerceIn(cRect.left + CORNER_LENGTH, iRect.right)
+        cRect.bottom = (cRect.bottom + dy).coerceIn(cRect.top + CORNER_LENGTH, iRect.bottom)
       }
 
       null -> {}
@@ -185,37 +201,24 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
     pendingCropUpdate?.let { cropUpdateHandler.removeCallbacks(it) }
 
     pendingCropUpdate = Runnable {
-      val cropRect = getCropRect() ?: return@Runnable
+      val wRect = workingRect ?: return@Runnable
+      val cRect = cropRect ?: return@Runnable
 
-      onCropChangeListener?.invoke(cropRect)
-      animateCropRect()
+      val targetRect = cRect.zoomToWorkingRect(wRect)
+      val zoomRatio = minOf(wRect.width() / cRect.width(), wRect.height() / cRect.height())
+
+      onCropChangeListener?.onChange(
+        topLeft = PointF(targetRect.left - cRect.left, targetRect.top - cRect.top),
+        zoomRatio = zoomRatio
+      )
+
+      animateCropRect(startingRect = cRect, targetRect = targetRect)
     }
 
     cropUpdateHandler.postDelayed(pendingCropUpdate!!, 500)
   }
 
-  /**
-   * Returns the cropping rectangle in normalized values (ranging from 0 to 1) from the original
-   * image rectangle. A cropping rectangle that fits the original image would be:
-   * { left: 0, top: 0, right: 1, bottom: 1 }
-   */
-  private fun getCropRect(): RectF? {
-    val cRect = cropRect ?: return null
-    val iRect = imageRect ?: return null
-
-    return RectF(
-      (cRect.left - iRect.left) / iRect.width(),
-      (cRect.top - iRect.top) / iRect.height(),
-      (cRect.right - iRect.left) / iRect.width(),
-      (cRect.bottom - iRect.top) / iRect.height()
-    )
-  }
-
-  private fun animateCropRect() {
-    val cRect = cropRect ?: return
-    val iRect = imageRect ?: return
-
-    val targetRect = cRect.zoomToWorkingRect(iRect)
+  private fun animateCropRect(startingRect: RectF, targetRect: RectF) {
     cropRect = RectF(targetRect)
 
     val animator = ValueAnimator.ofFloat(0f, 1f)
@@ -225,10 +228,10 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
       when (val state = animationState) {
         is AnimationState.Running ->
           state.rect = RectF(
-            value.lerp(cRect.left, targetRect.left),
-            value.lerp(cRect.top, targetRect.top),
-            value.lerp(cRect.right, targetRect.right),
-            value.lerp(cRect.bottom, targetRect.bottom),
+            value.lerp(startingRect.left, targetRect.left),
+            value.lerp(startingRect.top, targetRect.top),
+            value.lerp(startingRect.right, targetRect.right),
+            value.lerp(startingRect.bottom, targetRect.bottom),
           )
 
         else -> {}
@@ -242,7 +245,7 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
     animator.duration = 500
     animator.start()
 
-    animationState = AnimationState.Running(rect = RectF(cRect))
+    animationState = AnimationState.Running(rect = RectF(startingRect))
   }
 
 }
