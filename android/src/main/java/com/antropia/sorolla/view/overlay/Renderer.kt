@@ -15,6 +15,7 @@ private val INNER_LINES_STROKE_WIDTH = 0.5.dpToPx()
 private val CORNER_STROKE_WIDTH = 4.dpToPx()
 private val CORNER_STROKE_HALF_WIDTH = CORNER_STROKE_WIDTH / 2f
 private val CORNER_LENGTH = 25.dpToPx()
+private val EDGE_LENGTH = 25.dpToPx()
 
 class Renderer(private val view: View) {
   private val paint = Paint().apply {
@@ -26,10 +27,10 @@ class Renderer(private val view: View) {
     drawBackground(canvas, rect)
     drawHorizontalLines(canvas, rect)
     drawVerticalLines(canvas, rect)
-    drawCorners(canvas, rect)
+    drawAnchors(canvas, rect)
   }
 
-  private fun drawCorners(
+  private fun drawAnchors(
     canvas: Canvas,
     rect: RectF,
   ) {
@@ -69,6 +70,29 @@ class Renderer(private val view: View) {
     }
 
     canvas.drawPath(cornersPath, paint)
+
+    val midX = (rect.left + rect.right) / 2f
+    val midY = (rect.top + rect.bottom) / 2f
+
+    val edgesPath = Path().apply {
+      // Left edge
+      moveTo(left, midY - EDGE_LENGTH / 2)
+      lineTo(left, midY + EDGE_LENGTH / 2)
+
+      // Top edge
+      moveTo(midX - EDGE_LENGTH / 2, top)
+      lineTo(midX + EDGE_LENGTH / 2, top)
+
+      // Right edge
+      moveTo(right, midY - EDGE_LENGTH / 2)
+      lineTo(right, midY + EDGE_LENGTH / 2)
+
+      // Bottom edge
+      moveTo(midX - EDGE_LENGTH / 2, bottom)
+      lineTo(midX + EDGE_LENGTH / 2, bottom)
+    }
+
+    canvas.drawPath(edgesPath, paint)
   }
 
   private fun drawVerticalLines(

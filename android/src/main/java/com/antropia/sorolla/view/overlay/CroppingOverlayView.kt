@@ -211,7 +211,6 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
         anchor = corner.opposite,
         fromRect = cRect,
         toRect = targetRect
-//        PointF(targetRect.left - cRect.left, targetRect.top - cRect.top)
       )
 
       animateCropRect(startingRect = cRect, targetRect = targetRect)
