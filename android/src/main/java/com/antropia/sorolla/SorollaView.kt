@@ -2,8 +2,8 @@ package com.antropia.sorolla
 
 import android.content.Context
 import android.graphics.Matrix
-import android.graphics.PointF
 import android.graphics.Rect
+import android.graphics.RectF
 import android.net.Uri
 import android.os.Build
 import android.os.Handler
@@ -13,16 +13,15 @@ import android.view.LayoutInflater
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.ImageView
 import android.widget.LinearLayout
+import com.antropia.sorolla.util.RectAnchor
 import com.antropia.sorolla.util.paddingHorizontal
 import com.antropia.sorolla.util.paddingVertical
 import com.antropia.sorolla.view.overlay.CroppingOverlayView
-import kotlin.math.min
 
 class SorollaView : LinearLayout {
   private val gestureExclusionRect = Rect()
   private val imageView: ImageView
   private val croppingOverlayView: CroppingOverlayView
-  private var originalTranslation: PointF = PointF()
   private var originalImageScale: Float = 1f
   private var originalMatrix: Matrix? = null
   private val handler = Handler(Looper.getMainLooper())
@@ -53,11 +52,11 @@ class SorollaView : LinearLayout {
   }
 
   private fun setupCropListener() {
-    croppingOverlayView.setOnCropChangeListener { topLeft, zoomRatio ->
+    croppingOverlayView.setOnCropChangeListener { scale, anchor, fromRect, toRect ->
       pendingCropUpdate?.let { handler.removeCallbacks(it) }
 
       pendingCropUpdate = Runnable {
-        animateImageToCrop(topLeft, zoomRatio)
+        animateImageToCrop(scale, anchor, fromRect, toRect)
       }.also {
         handler.postDelayed(it, 0)
       }
@@ -82,7 +81,7 @@ class SorollaView : LinearLayout {
     val drawableHeight = drawable.intrinsicHeight
 
     // Scale the original image to the ImageView size, respecting paddings
-    val scale = min(
+    val scale = minOf(
       viewWidth.toFloat() / drawableWidth,
       viewHeight.toFloat() / drawableHeight
     )
@@ -97,24 +96,60 @@ class SorollaView : LinearLayout {
 
     imageView.imageMatrix = matrix
     originalImageScale = scale
-    originalTranslation = PointF(dx, dy)
     originalMatrix = Matrix(matrix)
 
     croppingOverlayView.setImageView(imageView)
   }
 
-  private fun animateImageToCrop(topLeft: PointF, zoomRatio: Float) {
+  private fun animateImageToCrop(scale: Float, anchor: RectAnchor, fromRect: RectF, toRect: RectF) {
+    val drawable = imageView.drawable ?: return
     val originalMatrix = originalMatrix ?: return
+
+    val viewWidth = imageView.width - imageView.paddingHorizontal
+    val viewHeight = imageView.height - imageView.paddingVertical
+    val drawableWidth = drawable.intrinsicWidth
+    val drawableHeight = drawable.intrinsicHeight
+    val drawableScale =
+      minOf(viewWidth.toFloat() / drawableWidth, viewHeight.toFloat() / drawableHeight)
+
+    val marginHorizontal = viewWidth - drawableWidth * drawableScale
+    val marginVertical = viewHeight - drawableHeight * drawableScale
+
+    val pivotLeft = marginHorizontal / 2f
+    val pivotRight = viewWidth - marginHorizontal / 2f
+    val pivotTop = marginVertical / 2f
+    val pivotBottom = viewHeight - marginVertical / 2f
 
     val targetMatrix = Matrix(originalMatrix)
 
-    targetMatrix.postScale(zoomRatio, zoomRatio, originalTranslation.x, originalTranslation.y)
-    targetMatrix.postTranslate(topLeft.x, topLeft.y)
+    when (anchor) {
+      RectAnchor.TOP_LEFT -> {
+        targetMatrix.postScale(scale, scale, pivotLeft, pivotTop)
+        targetMatrix.postTranslate(toRect.left - fromRect.left, toRect.top - fromRect.top)
+      }
+
+      RectAnchor.TOP_RIGHT -> {
+        targetMatrix.postScale(scale, scale, pivotRight, pivotTop)
+        targetMatrix.postTranslate(toRect.right - fromRect.right, toRect.top - fromRect.top)
+      }
+
+      RectAnchor.BOTTOM_LEFT -> {
+        targetMatrix.postScale(scale, scale, pivotLeft, pivotBottom)
+        targetMatrix.postTranslate(toRect.left - fromRect.left, toRect.bottom - fromRect.bottom)
+      }
+
+      RectAnchor.BOTTOM_RIGHT -> {
+        targetMatrix.postScale(scale, scale, pivotRight, pivotBottom)
+        targetMatrix.postTranslate(toRect.right - fromRect.right, toRect.bottom - fromRect.bottom)
+      }
+    }
+
+    this.originalMatrix = targetMatrix
 
     // Animate between current and target matrix
     val currentMatrix = Matrix(imageView.imageMatrix)
     val startTime = System.currentTimeMillis()
-    val duration = 500L // Animation duration in milliseconds
+    val duration = 500L
     val interpolator = AccelerateDecelerateInterpolator()
 
     val matrixEvaluator = object : Runnable {

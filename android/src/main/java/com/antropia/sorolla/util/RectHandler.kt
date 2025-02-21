@@ -1,5 +1,6 @@
 package com.antropia.sorolla.util
 
+import android.graphics.PointF
 import android.graphics.RectF
 
 enum class Axis {
@@ -8,6 +9,13 @@ enum class Axis {
 }
 
 interface RectHandler {
+  fun RectF.getAnchorPoint(anchor: RectAnchor): PointF = when (anchor) {
+    RectAnchor.TOP_LEFT -> PointF(left, top)
+    RectAnchor.TOP_RIGHT -> PointF(right, top)
+    RectAnchor.BOTTOM_LEFT -> PointF(left, bottom)
+    RectAnchor.BOTTOM_RIGHT -> PointF(right, bottom)
+  }
+
   /**
    * Enlarges the Rect to fit a working area.
    * The resulting rect preserves the aspect ratio of the operated rect.
