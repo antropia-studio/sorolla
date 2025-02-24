@@ -17,7 +17,6 @@
       android:layout_width="match_parent"
       android:layout_height="match_parent"
       android:layout_centerInParent="true"
-      android:background="#DD2299"
       android:contentDescription="@string/editable_image"
       android:padding="16dp"
       android:scaleType="matrix"
@@ -27,6 +26,7 @@
       android:id="@+id/cropping_overlay"
       android:layout_width="match_parent"
       android:layout_height="match_parent" />
+
   </RelativeLayout>
 
   <LinearLayout

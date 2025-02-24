@@ -51,9 +51,7 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
   private val renderer = Renderer(this)
 
   constructor(context: Context?) : super(context)
-
   constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
-
   constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(
     context,
     attrs,
@@ -133,18 +131,17 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
   }
 
   private fun detectTouchedCorner(x: Float, y: Float): RectAnchor? {
-    cropRect?.let { rect ->
-      val touchArea = TOUCH_AREA / 2
+    val cRect = cropRect ?: return null
 
-      return when {
-        isInTouchArea(x, y, rect.left, rect.top, touchArea) -> RectAnchor.TOP_LEFT
-        isInTouchArea(x, y, rect.right, rect.top, touchArea) -> RectAnchor.TOP_RIGHT
-        isInTouchArea(x, y, rect.left, rect.bottom, touchArea) -> RectAnchor.BOTTOM_LEFT
-        isInTouchArea(x, y, rect.right, rect.bottom, touchArea) -> RectAnchor.BOTTOM_RIGHT
-        else -> null
-      }
+    val touchArea = TOUCH_AREA / 2
+
+    return when {
+      isInTouchArea(x, y, cRect.left, cRect.top, touchArea) -> RectAnchor.TOP_LEFT
+      isInTouchArea(x, y, cRect.right, cRect.top, touchArea) -> RectAnchor.TOP_RIGHT
+      isInTouchArea(x, y, cRect.left, cRect.bottom, touchArea) -> RectAnchor.BOTTOM_LEFT
+      isInTouchArea(x, y, cRect.right, cRect.bottom, touchArea) -> RectAnchor.BOTTOM_RIGHT
+      else -> null
     }
-    return null
   }
 
   private fun isInTouchArea(

@@ -2,6 +2,7 @@ package com.antropia.sorolla
 
 import android.content.Context
 import android.graphics.Matrix
+import android.graphics.PointF
 import android.graphics.Rect
 import android.graphics.RectF
 import android.net.Uri
@@ -56,9 +57,9 @@ class SorollaView : LinearLayout {
       pendingCropUpdate?.let { handler.removeCallbacks(it) }
 
       pendingCropUpdate = Runnable {
-        animateImageToCrop(scale, anchor, fromRect, toRect)
+        refitImageToCrop(scale, anchor, fromRect, toRect)
       }.also {
-        handler.postDelayed(it, 0)
+        handler.post(it)
       }
     }
   }
@@ -101,52 +102,59 @@ class SorollaView : LinearLayout {
     croppingOverlayView.setImageView(imageView)
   }
 
-  private fun animateImageToCrop(scale: Float, anchor: RectAnchor, fromRect: RectF, toRect: RectF) {
-    val drawable = imageView.drawable ?: return
+  private fun refitImageToCrop(scale: Float, anchor: RectAnchor, fromRect: RectF, toRect: RectF) {
     val originalMatrix = originalMatrix ?: return
 
-    val viewWidth = imageView.width - imageView.paddingHorizontal
-    val viewHeight = imageView.height - imageView.paddingVertical
-    val drawableWidth = drawable.intrinsicWidth
-    val drawableHeight = drawable.intrinsicHeight
-    val drawableScale =
-      minOf(viewWidth.toFloat() / drawableWidth, viewHeight.toFloat() / drawableHeight)
-
-    val marginHorizontal = viewWidth - drawableWidth * drawableScale
-    val marginVertical = viewHeight - drawableHeight * drawableScale
-
-    val pivotLeft = marginHorizontal / 2f
-    val pivotRight = viewWidth - marginHorizontal / 2f
-    val pivotTop = marginVertical / 2f
-    val pivotBottom = viewHeight - marginVertical / 2f
+    val pivotLeft = fromRect.left - imageView.paddingLeft
+    val pivotTop = fromRect.top - imageView.paddingTop
+    val pivotRight = fromRect.right - imageView.paddingRight
+    val pivotBottom = fromRect.bottom - imageView.paddingBottom
 
     val targetMatrix = Matrix(originalMatrix)
 
-    when (anchor) {
-      RectAnchor.TOP_LEFT -> {
-        targetMatrix.postScale(scale, scale, pivotLeft, pivotTop)
-        targetMatrix.postTranslate(toRect.left - fromRect.left, toRect.top - fromRect.top)
-      }
+    val (pivot, translation) = when (anchor) {
+      RectAnchor.TOP_LEFT -> PointF(
+        pivotLeft,
+        pivotTop
+      ) to PointF(
+        toRect.left - fromRect.left,
+        toRect.top - fromRect.top
+      )
 
-      RectAnchor.TOP_RIGHT -> {
-        targetMatrix.postScale(scale, scale, pivotRight, pivotTop)
-        targetMatrix.postTranslate(toRect.right - fromRect.right, toRect.top - fromRect.top)
-      }
+      RectAnchor.TOP_RIGHT -> PointF(
+        pivotRight,
+        pivotTop
+      ) to PointF(
+        toRect.right - fromRect.right,
+        toRect.top - fromRect.top
+      )
 
-      RectAnchor.BOTTOM_LEFT -> {
-        targetMatrix.postScale(scale, scale, pivotLeft, pivotBottom)
-        targetMatrix.postTranslate(toRect.left - fromRect.left, toRect.bottom - fromRect.bottom)
-      }
+      RectAnchor.BOTTOM_LEFT -> PointF(
+        pivotLeft,
+        pivotBottom
+      ) to PointF(
+        toRect.left - fromRect.left,
+        toRect.bottom - fromRect.bottom
+      )
 
-      RectAnchor.BOTTOM_RIGHT -> {
-        targetMatrix.postScale(scale, scale, pivotRight, pivotBottom)
-        targetMatrix.postTranslate(toRect.right - fromRect.right, toRect.bottom - fromRect.bottom)
-      }
+      RectAnchor.BOTTOM_RIGHT -> PointF(
+        pivotRight,
+        pivotBottom
+      ) to PointF(
+        toRect.right - fromRect.right,
+        toRect.bottom - fromRect.bottom
+      )
     }
+
+    targetMatrix.postScale(scale, scale, pivot.x, pivot.y)
+    targetMatrix.postTranslate(translation.x, translation.y)
 
     this.originalMatrix = targetMatrix
 
-    // Animate between current and target matrix
+    animateImageMatrix(targetMatrix)
+  }
+
+  private fun animateImageMatrix(targetMatrix: Matrix) {
     val currentMatrix = Matrix(imageView.imageMatrix)
     val startTime = System.currentTimeMillis()
     val duration = 500L
@@ -182,6 +190,7 @@ class SorollaView : LinearLayout {
 
     handler.post(matrixEvaluator)
   }
+
 
   fun resetCrop() {
     originalMatrix?.let { matrix ->
