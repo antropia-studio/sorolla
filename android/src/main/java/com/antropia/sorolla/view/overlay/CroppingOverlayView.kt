@@ -27,15 +27,20 @@ import kotlin.math.abs
 import kotlin.math.min
 
 private val CORNER_LENGTH = 25.dpToPx()
-private val TOUCH_AREA = 48.dpToPx()
+private val CROP_TOUCH_AREA = 48.dpToPx()
+private val MOVE_TOUCH_AREA = 128.dpToPx()
 
 sealed interface AnimationState {
   data object Idle : AnimationState
   data class Running(var rect: RectF) : AnimationState
 }
 
-fun interface OnCropAreaChangeListener {
-  fun onChange(scale: Float, anchor: RectAnchor, fromRect: RectF, toRect: RectF)
+fun interface OnCropAreaScaleListener {
+  fun onScale(scale: Float, anchor: RectAnchor, fromRect: RectF, toRect: RectF)
+}
+
+fun interface OnCropAreaMoveListener {
+  fun onMove(dx: Float, dy: Float)
 }
 
 class CroppingOverlayView : View, RectHandler, Interpolator {
@@ -43,10 +48,12 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
   private var imageRect: RectF? = null
   private var cropRect: RectF? = null
   private var activeAnchor: RectAnchor? = null
+  private var activeMove: Boolean = false
   private var lastTouchX = 0f
   private var lastTouchY = 0f
   private var animationState: AnimationState = AnimationState.Idle
-  private var onCropChangeListener: OnCropAreaChangeListener? = null
+  private var onCropAreaScaleListener: OnCropAreaScaleListener? = null
+  private var onCropAreaMoveListener: OnCropAreaMoveListener? = null
   private val cropUpdateHandler = Handler(Looper.getMainLooper())
   private var pendingCropUpdate: Runnable? = null
   private val renderer = Renderer(this)
@@ -59,8 +66,12 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
     defStyleAttr
   )
 
-  fun setOnCropChangeListener(listener: OnCropAreaChangeListener) {
-    onCropChangeListener = listener
+  fun setOnCropAreaScaleListener(listener: OnCropAreaScaleListener) {
+    onCropAreaScaleListener = listener
+  }
+
+  fun setOnCropAreaMoveListener(listener: OnCropAreaMoveListener) {
+    onCropAreaMoveListener = listener
   }
 
   fun setImageView(imageView: ImageView) {
@@ -104,17 +115,25 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
         lastTouchX = event.x
         lastTouchY = event.y
         activeAnchor = detectTouchedAnchor(event.x, event.y)
-        return activeAnchor != null
+        activeMove = detectMoveAction(event.x, event.y)
+
+        return activeAnchor != null || activeMove
       }
 
       MotionEvent.ACTION_MOVE -> {
+        val dx = event.x - lastTouchX
+        val dy = event.y - lastTouchY
+
         if (activeAnchor != null) {
-          val dx = event.x - lastTouchX
-          val dy = event.y - lastTouchY
-          updateCropRect(dx, dy)
+          scaleCropRect(dx, dy)
           lastTouchX = event.x
           lastTouchY = event.y
           invalidate()
+          return true
+        } else if (activeMove) {
+          moveCropRect(dx, dy)
+          lastTouchX = event.x
+          lastTouchY = event.y
           return true
         }
       }
@@ -125,6 +144,7 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
           activeAnchor = null
         }
 
+        activeMove = false
       }
     }
 
@@ -134,7 +154,7 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
   private fun detectTouchedAnchor(x: Float, y: Float): RectAnchor? {
     val cRect = cropRect ?: return null
 
-    val touchArea = TOUCH_AREA / 2
+    val touchArea = CROP_TOUCH_AREA / 2
     val center = PointF((cRect.left + cRect.right) / 2f, (cRect.top + cRect.bottom) / 2f)
 
     return when {
@@ -150,6 +170,16 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
     }
   }
 
+
+  private fun detectMoveAction(x: Float, y: Float): Boolean {
+    val cRect = cropRect ?: return false
+
+    val touchArea = MOVE_TOUCH_AREA / 2
+    val center = PointF((cRect.left + cRect.right) / 2f, (cRect.top + cRect.bottom) / 2f)
+
+    return isInTouchArea(x, y, center.x, center.y, touchArea)
+  }
+
   private fun isInTouchArea(
     touchX: Float,
     touchY: Float,
@@ -158,7 +188,13 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
     touchArea: Float
   ): Boolean = abs(touchX - anchorX) <= touchArea && abs(touchY - anchorY) <= touchArea
 
-  private fun updateCropRect(dx: Float, dy: Float) {
+  private fun moveCropRect(dx: Float, dy: Float) {
+    pendingCropUpdate?.let { cropUpdateHandler.removeCallbacks(it) }
+    pendingCropUpdate = Runnable { onCropAreaMoveListener?.onMove(dx, dy) }
+    cropUpdateHandler.post(pendingCropUpdate!!)
+  }
+
+  private fun scaleCropRect(dx: Float, dy: Float) {
     val cRect = cropRect ?: return
     val iRect = imageRect ?: return
 
@@ -225,7 +261,7 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
       val targetRect = cRect.zoomToWorkingRect(wRect)
       val scale = minOf(wRect.width() / cRect.width(), wRect.height() / cRect.height())
 
-      onCropChangeListener?.onChange(
+      onCropAreaScaleListener?.onScale(
         scale,
         anchor = anchor.opposite,
         fromRect = cRect,
@@ -235,7 +271,7 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
       animateCropRect(startingRect = cRect, targetRect = targetRect)
     }
 
-    cropUpdateHandler.postDelayed(pendingCropUpdate!!, 500)
+    cropUpdateHandler.postDelayed(pendingCropUpdate!!, 100)
   }
 
   private fun animateCropRect(startingRect: RectF, targetRect: RectF) {

@@ -7,8 +7,6 @@ import android.graphics.Rect
 import android.graphics.RectF
 import android.net.Uri
 import android.os.Build
-import android.os.Handler
-import android.os.Looper
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.animation.AccelerateDecelerateInterpolator
@@ -25,8 +23,6 @@ class SorollaView : LinearLayout {
   private val croppingOverlayView: CroppingOverlayView
   private var originalImageScale: Float = 1f
   private var originalMatrix: Matrix? = null
-  private val handler = Handler(Looper.getMainLooper())
-  private var pendingCropUpdate: Runnable? = null
 
   constructor(context: Context?) : super(context)
   constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
@@ -40,7 +36,7 @@ class SorollaView : LinearLayout {
     LayoutInflater.from(context).inflate(R.layout.sorolla, this, true)
     imageView = findViewById(R.id.image_view)
     croppingOverlayView = findViewById(R.id.cropping_overlay)
-    setupCropListener()
+    setupCropListeners()
   }
 
   override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
@@ -52,15 +48,13 @@ class SorollaView : LinearLayout {
     }
   }
 
-  private fun setupCropListener() {
-    croppingOverlayView.setOnCropChangeListener { scale, anchor, fromRect, toRect ->
-      pendingCropUpdate?.let { handler.removeCallbacks(it) }
+  private fun setupCropListeners() {
+    croppingOverlayView.setOnCropAreaScaleListener { scale, anchor, fromRect, toRect ->
+      refitImageToCrop(scale, anchor, fromRect, toRect)
+    }
 
-      pendingCropUpdate = Runnable {
-        refitImageToCrop(scale, anchor, fromRect, toRect)
-      }.also {
-        handler.post(it)
-      }
+    croppingOverlayView.setOnCropAreaMoveListener { dx, dy ->
+      moveImage(dx, dy)
     }
   }
 
@@ -100,6 +94,16 @@ class SorollaView : LinearLayout {
     originalMatrix = Matrix(matrix)
 
     croppingOverlayView.setImageView(imageView)
+  }
+
+  private fun moveImage(dx: Float, dy: Float) {
+    val originalMatrix = originalMatrix ?: return
+
+    val targetMatrix = Matrix(originalMatrix)
+    targetMatrix.postTranslate(dx, dy)
+
+    this.originalMatrix = targetMatrix
+    imageView.imageMatrix = targetMatrix
   }
 
   private fun refitImageToCrop(scale: Float, anchor: RectAnchor, fromRect: RectF, toRect: RectF) {
@@ -186,14 +190,12 @@ class SorollaView : LinearLayout {
     targetMatrix.postTranslate(translation.x, translation.y)
 
     this.originalMatrix = targetMatrix
-
     animateImageMatrix(targetMatrix)
   }
 
-  private fun animateImageMatrix(targetMatrix: Matrix) {
+  private fun animateImageMatrix(targetMatrix: Matrix, duration: Long = 500L) {
     val currentMatrix = Matrix(imageView.imageMatrix)
     val startTime = System.currentTimeMillis()
-    val duration = 500L
     val interpolator = AccelerateDecelerateInterpolator()
 
     val matrixEvaluator = object : Runnable {
