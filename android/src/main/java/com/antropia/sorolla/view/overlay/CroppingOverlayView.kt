@@ -3,6 +3,7 @@ package com.antropia.sorolla.view.overlay
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.PointF
 import android.graphics.RectF
 import android.os.Handler
 import android.os.Looper
@@ -41,7 +42,7 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
   private var workingRect: RectF? = null
   private var imageRect: RectF? = null
   private var cropRect: RectF? = null
-  private var activeCorner: RectAnchor? = null
+  private var activeAnchor: RectAnchor? = null
   private var lastTouchX = 0f
   private var lastTouchY = 0f
   private var animationState: AnimationState = AnimationState.Idle
@@ -102,12 +103,12 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
       MotionEvent.ACTION_DOWN -> {
         lastTouchX = event.x
         lastTouchY = event.y
-        activeCorner = detectTouchedCorner(event.x, event.y)
-        return activeCorner != null
+        activeAnchor = detectTouchedAnchor(event.x, event.y)
+        return activeAnchor != null
       }
 
       MotionEvent.ACTION_MOVE -> {
-        if (activeCorner != null) {
+        if (activeAnchor != null) {
           val dx = event.x - lastTouchX
           val dy = event.y - lastTouchY
           updateCropRect(dx, dy)
@@ -119,9 +120,9 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
       }
 
       MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-        activeCorner?.let {
-          notifyCropChange(corner = it)
-          activeCorner = null
+        activeAnchor?.let {
+          notifyCropChange(anchor = it)
+          activeAnchor = null
         }
 
       }
@@ -130,12 +131,17 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
     return super.onTouchEvent(event)
   }
 
-  private fun detectTouchedCorner(x: Float, y: Float): RectAnchor? {
+  private fun detectTouchedAnchor(x: Float, y: Float): RectAnchor? {
     val cRect = cropRect ?: return null
 
     val touchArea = TOUCH_AREA / 2
+    val center = PointF((cRect.left + cRect.right) / 2f, (cRect.top + cRect.bottom) / 2f)
 
     return when {
+      isInTouchArea(x, y, cRect.left, center.y, touchArea) -> RectAnchor.LEFT
+      isInTouchArea(x, y, center.x, cRect.top, touchArea) -> RectAnchor.TOP
+      isInTouchArea(x, y, cRect.right, center.y, touchArea) -> RectAnchor.RIGHT
+      isInTouchArea(x, y, center.x, cRect.bottom, touchArea) -> RectAnchor.BOTTOM
       isInTouchArea(x, y, cRect.left, cRect.top, touchArea) -> RectAnchor.TOP_LEFT
       isInTouchArea(x, y, cRect.right, cRect.top, touchArea) -> RectAnchor.TOP_RIGHT
       isInTouchArea(x, y, cRect.left, cRect.bottom, touchArea) -> RectAnchor.BOTTOM_LEFT
@@ -147,16 +153,32 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
   private fun isInTouchArea(
     touchX: Float,
     touchY: Float,
-    cornerX: Float,
-    cornerY: Float,
+    anchorX: Float,
+    anchorY: Float,
     touchArea: Float
-  ): Boolean = abs(touchX - cornerX) <= touchArea && abs(touchY - cornerY) <= touchArea
+  ): Boolean = abs(touchX - anchorX) <= touchArea && abs(touchY - anchorY) <= touchArea
 
   private fun updateCropRect(dx: Float, dy: Float) {
     val cRect = cropRect ?: return
     val iRect = imageRect ?: return
 
-    when (activeCorner) {
+    when (activeAnchor) {
+      RectAnchor.LEFT -> {
+        cRect.left = (cRect.left + dx).coerceIn(iRect.left, cRect.right - CORNER_LENGTH)
+      }
+
+      RectAnchor.TOP -> {
+        cRect.top = (cRect.top + dy).coerceIn(iRect.top, cRect.bottom - CORNER_LENGTH)
+      }
+
+      RectAnchor.RIGHT -> {
+        cRect.right = (cRect.right + dx).coerceIn(cRect.left + CORNER_LENGTH, iRect.right)
+      }
+
+      RectAnchor.BOTTOM -> {
+        cRect.bottom = (cRect.bottom + dy).coerceIn(cRect.top + CORNER_LENGTH, iRect.bottom)
+      }
+
       RectAnchor.TOP_LEFT -> {
         cRect.left = (cRect.left + dx).coerceIn(iRect.left, cRect.right - CORNER_LENGTH)
         cRect.top = (cRect.top + dy).coerceIn(iRect.top, cRect.bottom - CORNER_LENGTH)
@@ -193,7 +215,7 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
     renderer.render(canvas, rect)
   }
 
-  private fun notifyCropChange(corner: RectAnchor) {
+  private fun notifyCropChange(anchor: RectAnchor) {
     pendingCropUpdate?.let { cropUpdateHandler.removeCallbacks(it) }
 
     pendingCropUpdate = Runnable {
@@ -205,7 +227,7 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
 
       onCropChangeListener?.onChange(
         scale,
-        anchor = corner.opposite,
+        anchor = anchor.opposite,
         fromRect = cRect,
         toRect = targetRect
       )

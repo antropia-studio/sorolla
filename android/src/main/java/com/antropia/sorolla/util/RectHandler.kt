@@ -9,11 +9,20 @@ enum class Axis {
 }
 
 interface RectHandler {
-  fun RectF.getAnchorPoint(anchor: RectAnchor): PointF = when (anchor) {
-    RectAnchor.TOP_LEFT -> PointF(left, top)
-    RectAnchor.TOP_RIGHT -> PointF(right, top)
-    RectAnchor.BOTTOM_LEFT -> PointF(left, bottom)
-    RectAnchor.BOTTOM_RIGHT -> PointF(right, bottom)
+  fun RectF.getAnchorPoint(anchor: RectAnchor): PointF {
+    val centerX = (left + right) / 2f
+    val centerY = (top + bottom) / 2f
+
+    return when (anchor) {
+      RectAnchor.LEFT -> PointF(left, centerY)
+      RectAnchor.TOP -> PointF(centerX, top)
+      RectAnchor.RIGHT -> PointF(right, centerY)
+      RectAnchor.BOTTOM -> PointF(centerX, bottom)
+      RectAnchor.TOP_LEFT -> PointF(left, top)
+      RectAnchor.TOP_RIGHT -> PointF(right, top)
+      RectAnchor.BOTTOM_LEFT -> PointF(left, bottom)
+      RectAnchor.BOTTOM_RIGHT -> PointF(right, bottom)
+    }
   }
 
   /**
@@ -25,16 +34,15 @@ interface RectHandler {
 
     val leadingAxis = getLeadingAxisForZoom(workingRect)
 
-    val midX = workingRect.centerX()
-    val midY = workingRect.centerY()
+    val center = PointF(workingRect.centerX(), workingRect.centerY())
 
     val zoomedWidth = aspectRatio.calculateWidth(workingRect.height())
     val zoomedHeight = aspectRatio.calculateHeight(workingRect.width())
 
-    val zoomedLeft = midX - zoomedWidth / 2f
-    val zoomedRight = midX + zoomedWidth / 2f
-    val zoomedTop = midY - zoomedHeight / 2f
-    val zoomedBottom = midY + zoomedHeight / 2f
+    val zoomedLeft = center.x - zoomedWidth / 2f
+    val zoomedRight = center.x + zoomedWidth / 2f
+    val zoomedTop = center.y - zoomedHeight / 2f
+    val zoomedBottom = center.y + zoomedHeight / 2f
 
     return when (leadingAxis) {
       Axis.HORIZONTAL -> RectF(workingRect.left, zoomedTop, workingRect.right, zoomedBottom)

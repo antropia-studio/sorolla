@@ -109,10 +109,46 @@ class SorollaView : LinearLayout {
     val pivotTop = fromRect.top - imageView.paddingTop
     val pivotRight = fromRect.right - imageView.paddingRight
     val pivotBottom = fromRect.bottom - imageView.paddingBottom
+    val pivotCenter = PointF(
+      (fromRect.left + fromRect.right) / 2f,
+      (fromRect.top + fromRect.bottom) / 2f
+    )
 
     val targetMatrix = Matrix(originalMatrix)
 
     val (pivot, translation) = when (anchor) {
+      RectAnchor.LEFT -> PointF(
+        pivotLeft,
+        pivotCenter.y
+      ) to PointF(
+        toRect.left - fromRect.left,
+        0f
+      )
+
+      RectAnchor.TOP -> PointF(
+        pivotCenter.x,
+        pivotTop
+      ) to PointF(
+        0f,
+        toRect.top - fromRect.top
+      )
+
+      RectAnchor.RIGHT -> PointF(
+        pivotRight,
+        pivotCenter.y
+      ) to PointF(
+        toRect.right - fromRect.right,
+        0f
+      )
+
+      RectAnchor.BOTTOM -> PointF(
+        pivotCenter.x,
+        pivotBottom
+      ) to PointF(
+        0f,
+        toRect.bottom - fromRect.bottom
+      )
+
       RectAnchor.TOP_LEFT -> PointF(
         pivotLeft,
         pivotTop
