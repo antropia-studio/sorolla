@@ -2,6 +2,7 @@ package com.antropia.sorolla.util
 
 import android.graphics.PointF
 import android.graphics.RectF
+import android.view.View
 
 enum class Axis {
   HORIZONTAL,
@@ -68,4 +69,16 @@ interface RectHandler {
     else
       Axis.VERTICAL
   }
+
+  /**
+   * Removes the padding from the given view and returns a new RectF.
+   * This function does not mutate "this".
+   */
+  fun RectF.removePadding(view: View): RectF =
+    RectF(this).apply {
+      left -= view.paddingLeft
+      top -= view.paddingTop
+      right -= view.paddingRight
+      bottom -= view.paddingBottom
+    }
 }

@@ -13,11 +13,13 @@ import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.ImageView
 import android.widget.LinearLayout
 import com.antropia.sorolla.util.RectAnchor
+import com.antropia.sorolla.util.RectHandler
 import com.antropia.sorolla.util.paddingHorizontal
 import com.antropia.sorolla.util.paddingVertical
 import com.antropia.sorolla.view.overlay.CroppingOverlayView
+import com.antropia.sorolla.view.overlay.OnCropAreaChangeListener
 
-class SorollaView : LinearLayout {
+class SorollaView : LinearLayout, RectHandler {
   private val gestureExclusionRect = Rect()
   private val imageView: ImageView
   private val croppingOverlayView: CroppingOverlayView
@@ -49,13 +51,20 @@ class SorollaView : LinearLayout {
   }
 
   private fun setupCropListeners() {
-    croppingOverlayView.setOnCropAreaScaleListener { scale, anchor, fromRect, toRect ->
-      refitImageToCrop(scale, anchor, fromRect, toRect)
-    }
+    croppingOverlayView.setOnCropAreaChangeListener(object : OnCropAreaChangeListener {
+      override fun onScale(scale: Float, anchor: RectAnchor, fromRect: RectF, toRect: RectF) {
+        refitImageToCrop(scale, anchor, fromRect, toRect)
+      }
 
-    croppingOverlayView.setOnCropAreaMoveListener { dx, dy ->
-      moveImage(dx, dy)
-    }
+      override fun onMove(dx: Float, dy: Float) {
+        moveImage(dx, dy)
+      }
+
+      override fun onMoveFinish(croppingRect: RectF) {
+        moveImageWithinBoundaries(croppingRect)
+      }
+    })
+
   }
 
   fun setImage(uri: String) {
@@ -96,6 +105,10 @@ class SorollaView : LinearLayout {
     croppingOverlayView.setImageView(imageView)
   }
 
+  /**
+   * Moves the image the given distances in the two axis.
+   * This method translates the image matrix according to the given vector.
+   */
   private fun moveImage(dx: Float, dy: Float) {
     val originalMatrix = originalMatrix ?: return
 
@@ -104,6 +117,53 @@ class SorollaView : LinearLayout {
 
     this.originalMatrix = targetMatrix
     imageView.imageMatrix = targetMatrix
+  }
+
+  /**
+   * Moves the image within the boundaries of the cropping rect.
+   * It inverts the image matrix and calculates the points of the bounding rect within the image.
+   * If any of the points are out of the image (<0 or >width/height) then we move the image
+   * accordingly to place it back within the given rectangle.
+   */
+  private fun moveImageWithinBoundaries(croppingRect: RectF) {
+    val originalMatrix = originalMatrix ?: return
+    val drawable = imageView.drawable ?: return
+
+    val drawableWidth = drawable.intrinsicWidth
+    val drawableHeight = drawable.intrinsicHeight
+
+    val inverseMatrix = Matrix()
+    originalMatrix.invert(inverseMatrix)
+
+    val normalizedCroppingRect = croppingRect.removePadding(imageView)
+    inverseMatrix.mapRect(normalizedCroppingRect)
+
+    val targetMatrix = Matrix(originalMatrix)
+
+    if (normalizedCroppingRect.left < 0) {
+      targetMatrix.postTranslate(originalImageScale * normalizedCroppingRect.left, 0f)
+    }
+
+    if (normalizedCroppingRect.top < 0) {
+      targetMatrix.postTranslate(0f, originalImageScale * normalizedCroppingRect.top)
+    }
+
+    if (normalizedCroppingRect.right > drawableWidth) {
+      targetMatrix.postTranslate(
+        originalImageScale * (normalizedCroppingRect.right - drawableWidth),
+        0f
+      )
+    }
+
+    if (normalizedCroppingRect.bottom > drawableHeight) {
+      targetMatrix.postTranslate(
+        0f,
+        originalImageScale * (normalizedCroppingRect.bottom - drawableHeight)
+      )
+    }
+
+    this.originalMatrix = targetMatrix
+    animateImageMatrix(targetMatrix, duration = 200L)
   }
 
   private fun refitImageToCrop(scale: Float, anchor: RectAnchor, fromRect: RectF, toRect: RectF) {
@@ -190,6 +250,7 @@ class SorollaView : LinearLayout {
     targetMatrix.postTranslate(translation.x, translation.y)
 
     this.originalMatrix = targetMatrix
+    this.originalImageScale *= scale
     animateImageMatrix(targetMatrix)
   }
 
@@ -210,7 +271,6 @@ class SorollaView : LinearLayout {
         currentMatrix.getValues(currentValues)
         targetMatrix.getValues(targetValues)
 
-        // Interpolate between matrices
         val interpolatedValues = FloatArray(9)
         for (i in 0..8) {
           interpolatedValues[i] = currentValues[i] +

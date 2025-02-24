@@ -35,12 +35,10 @@ sealed interface AnimationState {
   data class Running(var rect: RectF) : AnimationState
 }
 
-fun interface OnCropAreaScaleListener {
+interface OnCropAreaChangeListener {
   fun onScale(scale: Float, anchor: RectAnchor, fromRect: RectF, toRect: RectF)
-}
-
-fun interface OnCropAreaMoveListener {
   fun onMove(dx: Float, dy: Float)
+  fun onMoveFinish(croppingRect: RectF)
 }
 
 class CroppingOverlayView : View, RectHandler, Interpolator {
@@ -52,8 +50,7 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
   private var lastTouchX = 0f
   private var lastTouchY = 0f
   private var animationState: AnimationState = AnimationState.Idle
-  private var onCropAreaScaleListener: OnCropAreaScaleListener? = null
-  private var onCropAreaMoveListener: OnCropAreaMoveListener? = null
+  private var onCropAreaChangeListener: OnCropAreaChangeListener? = null
   private val cropUpdateHandler = Handler(Looper.getMainLooper())
   private var pendingCropUpdate: Runnable? = null
   private val renderer = Renderer(this)
@@ -66,12 +63,8 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
     defStyleAttr
   )
 
-  fun setOnCropAreaScaleListener(listener: OnCropAreaScaleListener) {
-    onCropAreaScaleListener = listener
-  }
-
-  fun setOnCropAreaMoveListener(listener: OnCropAreaMoveListener) {
-    onCropAreaMoveListener = listener
+  fun setOnCropAreaChangeListener(listener: OnCropAreaChangeListener) {
+    onCropAreaChangeListener = listener
   }
 
   fun setImageView(imageView: ImageView) {
@@ -131,7 +124,7 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
           invalidate()
           return true
         } else if (activeMove) {
-          moveCropRect(dx, dy)
+          notify({ onCropAreaChangeListener?.onMove(dx, dy) })
           lastTouchX = event.x
           lastTouchY = event.y
           return true
@@ -141,9 +134,13 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
       MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
         activeAnchor?.let {
           notifyCropChange(anchor = it)
-          activeAnchor = null
         }
 
+        if (activeMove) {
+          notify({ onCropAreaChangeListener?.onMoveFinish(cropRect ?: RectF()) })
+        }
+
+        activeAnchor = null
         activeMove = false
       }
     }
@@ -187,12 +184,6 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
     anchorY: Float,
     touchArea: Float
   ): Boolean = abs(touchX - anchorX) <= touchArea && abs(touchY - anchorY) <= touchArea
-
-  private fun moveCropRect(dx: Float, dy: Float) {
-    pendingCropUpdate?.let { cropUpdateHandler.removeCallbacks(it) }
-    pendingCropUpdate = Runnable { onCropAreaMoveListener?.onMove(dx, dy) }
-    cropUpdateHandler.post(pendingCropUpdate!!)
-  }
 
   private fun scaleCropRect(dx: Float, dy: Float) {
     val cRect = cropRect ?: return
@@ -252,16 +243,14 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
   }
 
   private fun notifyCropChange(anchor: RectAnchor) {
-    pendingCropUpdate?.let { cropUpdateHandler.removeCallbacks(it) }
-
-    pendingCropUpdate = Runnable {
-      val wRect = workingRect ?: return@Runnable
-      val cRect = cropRect ?: return@Runnable
+    notify({
+      val wRect = workingRect ?: return@notify
+      val cRect = cropRect ?: return@notify
 
       val targetRect = cRect.zoomToWorkingRect(wRect)
       val scale = minOf(wRect.width() / cRect.width(), wRect.height() / cRect.height())
 
-      onCropAreaScaleListener?.onScale(
+      onCropAreaChangeListener?.onScale(
         scale,
         anchor = anchor.opposite,
         fromRect = cRect,
@@ -269,9 +258,7 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
       )
 
       animateCropRect(startingRect = cRect, targetRect = targetRect)
-    }
-
-    cropUpdateHandler.postDelayed(pendingCropUpdate!!, 100)
+    }, delay = 100L)
   }
 
   private fun animateCropRect(startingRect: RectF, targetRect: RectF) {
@@ -302,6 +289,18 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
     animator.start()
 
     animationState = AnimationState.Running(rect = RectF(startingRect))
+  }
+
+  private fun notify(block: () -> Unit, delay: Long = 0L) {
+    pendingCropUpdate?.let { cropUpdateHandler.removeCallbacks(it) }
+
+    pendingCropUpdate = Runnable { block() }
+
+    if (delay > 0) {
+      cropUpdateHandler.postDelayed(pendingCropUpdate!!, delay)
+    } else {
+      cropUpdateHandler.post(pendingCropUpdate!!)
+    }
   }
 
 }
