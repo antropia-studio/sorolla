@@ -45,6 +45,7 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
   private var workingRect: RectF? = null
   private var imageRect: RectF? = null
   private var cropRect: RectF? = null
+  private var originalRect: RectF? = null
   private var activeAnchor: RectAnchor? = null
   private var activeMove: Boolean = false
   private var lastTouchX = 0f
@@ -97,7 +98,16 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
     )
     imageRect = RectF(left, top, left + scaledWidth, top + scaledHeight)
     cropRect = RectF(imageRect)
+    originalRect = RectF(imageRect)
+
     invalidate()
+  }
+
+  fun restoreOverlay() {
+    val cRect = cropRect ?: return
+    val oRect = originalRect ?: return
+
+    animateCropRect(cRect, oRect)
   }
 
   override fun onTouchEvent(event: MotionEvent): Boolean {

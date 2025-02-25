@@ -12,7 +12,7 @@
     android:layout_height="0dp"
     android:layout_weight="1">
 
-    <ImageView
+    <com.antropia.sorolla.view.overlay.TransformableImageView
       android:id="@+id/image_view"
       android:layout_width="match_parent"
       android:layout_height="match_parent"
@@ -30,45 +30,60 @@
   </RelativeLayout>
 
   <LinearLayout
-    android:layout_width="wrap_content"
-    android:layout_height="48dp"
-    android:layout_gravity="center"
-    android:orientation="horizontal">
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:orientation="vertical">
 
-    <ImageButton
-      android:id="@+id/crop_button"
-      android:layout_width="48dp"
-      android:layout_height="match_parent"
-      android:layout_weight="1"
-      android:background="?attr/selectableItemBackgroundBorderless"
-      android:contentDescription="@string/crop"
-      app:srcCompat="@drawable/crop" />
-
-    <Space
-      android:layout_width="32dp"
-      android:layout_height="match_parent" />
-
-    <ImageButton
-      android:id="@+id/brush_button"
-      android:layout_width="48dp"
+    <Button
+      android:id="@+id/restore_button"
+      android:layout_width="wrap_content"
       android:layout_height="48dp"
-      android:layout_weight="1"
       android:background="?attr/selectableItemBackgroundBorderless"
-      android:contentDescription="@string/brush"
-      app:srcCompat="@drawable/brush" />
+      android:text="@string/restore"
+      android:textColor="@color/white" />
 
-    <Space
-      android:layout_width="32dp"
-      android:layout_height="match_parent" />
-
-    <ImageButton
-      android:id="@+id/settings_button"
-      android:layout_width="48dp"
+    <LinearLayout
+      android:layout_width="wrap_content"
       android:layout_height="48dp"
-      android:layout_weight="1"
-      android:background="?attr/selectableItemBackgroundBorderless"
-      android:contentDescription="@string/settings"
-      app:srcCompat="@drawable/settings" />
+      android:layout_gravity="center"
+      android:orientation="horizontal">
+
+      <ImageButton
+        android:id="@+id/transform_button"
+        android:layout_width="48dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/crop"
+        app:srcCompat="@drawable/crop" />
+
+      <Space
+        android:layout_width="32dp"
+        android:layout_height="match_parent" />
+
+      <ImageButton
+        android:id="@+id/brush_button"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_weight="1"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/brush"
+        app:srcCompat="@drawable/brush" />
+
+      <Space
+        android:layout_width="32dp"
+        android:layout_height="match_parent" />
+
+      <ImageButton
+        android:id="@+id/settings_button"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_weight="1"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/settings"
+        app:srcCompat="@drawable/settings" />
+    </LinearLayout>
   </LinearLayout>
 
   <Space
