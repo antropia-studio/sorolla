@@ -12,8 +12,8 @@ import android.view.LayoutInflater
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.ImageView
 import android.widget.LinearLayout
+import com.antropia.sorolla.mixin.RectHandler
 import com.antropia.sorolla.util.RectAnchor
-import com.antropia.sorolla.util.RectHandler
 import com.antropia.sorolla.util.paddingHorizontal
 import com.antropia.sorolla.util.paddingVertical
 import com.antropia.sorolla.view.overlay.CroppingOverlayView

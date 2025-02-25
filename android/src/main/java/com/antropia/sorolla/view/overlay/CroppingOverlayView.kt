@@ -15,9 +15,9 @@ import android.widget.ImageView
 import androidx.core.animation.doOnEnd
 import androidx.core.view.marginLeft
 import androidx.core.view.marginTop
-import com.antropia.sorolla.util.Interpolator
+import com.antropia.sorolla.mixin.Interpolator
+import com.antropia.sorolla.mixin.RectHandler
 import com.antropia.sorolla.util.RectAnchor
-import com.antropia.sorolla.util.RectHandler
 import com.antropia.sorolla.util.marginHorizontal
 import com.antropia.sorolla.util.marginVertical
 import com.antropia.sorolla.util.paddingHorizontal

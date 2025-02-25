@@ -1,13 +1,11 @@
-package com.antropia.sorolla.util
+package com.antropia.sorolla.mixin
 
 import android.graphics.PointF
 import android.graphics.RectF
 import android.view.View
-
-enum class Axis {
-  HORIZONTAL,
-  VERTICAL
-}
+import com.antropia.sorolla.util.AspectRatio
+import com.antropia.sorolla.util.Axis
+import com.antropia.sorolla.util.RectAnchor
 
 interface RectHandler {
   fun RectF.getAnchorPoint(anchor: RectAnchor): PointF {
