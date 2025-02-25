@@ -170,11 +170,12 @@ class TransformableImageView : AppCompatImageView, RectHandler, ViewRenderer {
     targetMatrix.postScale(scale, scale, pivot.x, pivot.y)
     targetMatrix.postTranslate(translation.x, translation.y)
 
-    this.imageScale *= scale
+    imageScale *= scale
     animateImageMatrix(targetMatrix)
   }
 
   fun restoreTransforms() {
+    imageScale = 1f
     animateImageMatrix(originalImageMatrix, duration = 500L)
   }
 

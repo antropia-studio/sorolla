@@ -8,7 +8,7 @@ interface EditFinishEvent {
 }
 
 interface NativeProps extends ViewProps {
-  onEditFinish: BubblingEventHandler<EditFinishEvent>;
+  onEditFinish: BubblingEventHandler<Readonly<EditFinishEvent>>;
   uri: string;
 }
 

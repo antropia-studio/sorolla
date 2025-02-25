@@ -6,11 +6,13 @@ import android.graphics.RectF
 import android.os.Build
 import android.util.AttributeSet
 import android.view.LayoutInflater
+import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import com.antropia.sorolla.event.OnEditFinishEvent
 import com.antropia.sorolla.mixin.RectHandler
+import com.antropia.sorolla.mixin.ViewAnimator
 import com.antropia.sorolla.util.RectAnchor
 import com.antropia.sorolla.view.overlay.CroppingOverlayView
 import com.antropia.sorolla.view.overlay.OnCropAreaChangeListener
@@ -20,10 +22,16 @@ import com.facebook.react.bridge.ReactContext
 import com.facebook.react.uimanager.UIManagerHelper
 
 
-class SorollaView : LinearLayout, RectHandler {
+class SorollaView : LinearLayout, RectHandler, ViewAnimator {
   private val gestureExclusionRect = Rect()
   private val imageView: TransformableImageView
   private val croppingOverlayView: CroppingOverlayView
+  private val editionToolsView: View
+  private val transformToolsView: View
+  private val transformButton: ImageButton
+  private val cancelTransformButton: ImageButton
+  private val acceptTransformButton: ImageButton
+  private val confirmationButtons: List<View>
 
   constructor(context: Context?) : super(context)
   constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
@@ -37,6 +45,12 @@ class SorollaView : LinearLayout, RectHandler {
     LayoutInflater.from(context).inflate(R.layout.sorolla, this, true)
     imageView = findViewById(R.id.image_view)
     croppingOverlayView = findViewById(R.id.cropping_overlay)
+    editionToolsView = findViewById(R.id.edition_tools)
+    transformToolsView = findViewById(R.id.transform_tools)
+    transformButton = findViewById(R.id.transform_button)
+    cancelTransformButton = findViewById(R.id.cancel_transform_button)
+    acceptTransformButton = findViewById(R.id.accept_transform_button)
+    confirmationButtons = listOf(cancelTransformButton, acceptTransformButton)
 
     setupCropListeners()
     setupButtonListeners()
@@ -72,13 +86,25 @@ class SorollaView : LinearLayout, RectHandler {
     })
   }
 
-
   private fun setupButtonListeners() {
-    findViewById<Button>(R.id.restore_button).setOnClickListener {
-      resetTransforms()
+    transformButton.setOnClickListener {
+      editionToolsView.replaceAnimated(transformToolsView)
+      confirmationButtons.forEach { it.show() }
+      croppingOverlayView.fadeIn()
     }
 
-    findViewById<ImageButton>(R.id.accept_button).setOnClickListener {
+    findViewById<Button>(R.id.restore_button).setOnClickListener { resetTransforms() }
+
+    cancelTransformButton.setOnClickListener {
+      resetTransforms()
+      transformToolsView.replaceAnimated(editionToolsView)
+      confirmationButtons.forEach { it.hide() }
+      croppingOverlayView.fadeOut()
+    }
+    acceptTransformButton.setOnClickListener {
+      transformToolsView.replaceAnimated(editionToolsView)
+      confirmationButtons.forEach { it.hide() }
+      croppingOverlayView.fadeOut()
       finishEdition()
     }
   }

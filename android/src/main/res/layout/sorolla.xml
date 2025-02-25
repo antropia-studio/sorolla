@@ -25,7 +25,8 @@
     <com.antropia.sorolla.view.overlay.CroppingOverlayView
       android:id="@+id/cropping_overlay"
       android:layout_width="match_parent"
-      android:layout_height="match_parent" />
+      android:layout_height="match_parent"
+      android:visibility="invisible" />
 
   </RelativeLayout>
 
@@ -38,7 +39,7 @@
     <Button
       android:id="@+id/restore_button"
       android:layout_width="wrap_content"
-      android:layout_height="48dp"
+      android:layout_height="@dimen/min_pressable"
       android:background="?attr/selectableItemBackgroundBorderless"
       android:text="@string/restore"
       android:textColor="@color/white" />
@@ -50,67 +51,120 @@
       android:orientation="horizontal">
 
       <ImageButton
-        android:id="@+id/cancel_button"
-        android:layout_width="48dp"
+        android:id="@+id/cancel_transform_button"
+        android:layout_width="@dimen/min_pressable"
         android:layout_height="match_parent"
         android:layout_weight="2"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:contentDescription="@string/cancel"
+        android:visibility="invisible"
         app:srcCompat="@drawable/x_circle" />
 
-      <LinearLayout
+      <FrameLayout
         android:layout_width="wrap_content"
-        android:layout_height="48dp"
-        android:layout_weight="1"
-        android:gravity="center"
-        android:orientation="horizontal">
+        android:layout_height="@dimen/min_pressable"
+        android:layout_weight="1">
 
-        <ImageButton
-          android:id="@+id/transform_button"
-          android:layout_width="48dp"
-          android:layout_height="match_parent"
-          android:background="?attr/selectableItemBackgroundBorderless"
-          android:contentDescription="@string/crop"
-          app:srcCompat="@drawable/crop" />
+        <LinearLayout
+          android:id="@+id/edition_tools"
+          android:layout_width="wrap_content"
+          android:layout_height="@dimen/min_pressable"
+          android:layout_gravity="center"
+          android:orientation="horizontal">
 
-        <Space
-          android:layout_width="16dp"
-          android:layout_height="match_parent" />
+          <ImageButton
+            android:id="@+id/transform_button"
+            android:layout_width="@dimen/min_pressable"
+            android:layout_height="match_parent"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/transform"
+            app:srcCompat="@drawable/crop" />
 
-        <ImageButton
-          android:id="@+id/brush_button"
-          android:layout_width="48dp"
-          android:layout_height="48dp"
-          android:background="?attr/selectableItemBackgroundBorderless"
-          android:contentDescription="@string/brush"
-          app:srcCompat="@drawable/brush" />
+          <Space
+            android:layout_width="16dp"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
 
-        <Space
-          android:layout_width="16dp"
-          android:layout_height="match_parent" />
+          <ImageButton
+            android:id="@+id/brush_button"
+            android:layout_width="@dimen/min_pressable"
+            android:layout_height="@dimen/min_pressable"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/brush"
+            android:visibility="gone"
+            app:srcCompat="@drawable/brush" />
 
-        <ImageButton
-          android:id="@+id/settings_button"
-          android:layout_width="48dp"
-          android:layout_height="48dp"
-          android:background="?attr/selectableItemBackgroundBorderless"
-          android:contentDescription="@string/settings"
-          app:srcCompat="@drawable/settings" />
-      </LinearLayout>
+          <Space
+            android:layout_width="16dp"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
 
+          <ImageButton
+            android:id="@+id/settings_button"
+            android:layout_width="@dimen/min_pressable"
+            android:layout_height="@dimen/min_pressable"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/settings"
+            android:visibility="gone"
+            app:srcCompat="@drawable/settings" />
+        </LinearLayout>
+
+        <LinearLayout
+          android:id="@+id/transform_tools"
+          android:layout_width="wrap_content"
+          android:layout_height="@dimen/min_pressable"
+          android:layout_gravity="center"
+          android:orientation="horizontal"
+          android:visibility="invisible">
+
+          <ImageButton
+            android:id="@+id/rotate_button"
+            android:layout_width="@dimen/min_pressable"
+            android:layout_height="match_parent"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/rotate"
+            app:srcCompat="@drawable/rotate_ccw" />
+
+          <Space
+            android:layout_width="16dp"
+            android:layout_height="match_parent" />
+
+          <ImageButton
+            android:id="@+id/mirror_button"
+            android:layout_width="@dimen/min_pressable"
+            android:layout_height="@dimen/min_pressable"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/horizontal_mirror"
+            app:srcCompat="@drawable/horizontal_mirror" />
+
+          <Space
+            android:layout_width="16dp"
+            android:layout_height="match_parent" />
+
+          <ImageButton
+            android:id="@+id/aspect_ratio_button"
+            android:layout_width="@dimen/min_pressable"
+            android:layout_height="@dimen/min_pressable"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/aspect_ratio"
+            app:srcCompat="@drawable/aspect_ratio" />
+        </LinearLayout>
+      </FrameLayout>
 
       <ImageButton
-        android:id="@+id/accept_button"
-        android:layout_width="48dp"
+        android:id="@+id/accept_transform_button"
+        android:layout_width="@dimen/min_pressable"
         android:layout_height="match_parent"
         android:layout_weight="2"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:contentDescription="@string/accept"
+        android:visibility="invisible"
         app:srcCompat="@drawable/check_circle" />
     </LinearLayout>
+
   </LinearLayout>
 
   <Space
     android:layout_width="match_parent"
-    android:layout_height="48dp" />
+    android:layout_height="@dimen/min_pressable" />
 </LinearLayout>
