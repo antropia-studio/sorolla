@@ -1,10 +1,18 @@
 import { SorollaView } from '@antropia/sorolla';
 import { useCallback, useState } from 'react';
-import { Pressable, SafeAreaView, Text, View } from 'react-native';
+import {
+  Dimensions,
+  Image,
+  Pressable,
+  SafeAreaView,
+  Text,
+  View,
+} from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 
 export default function App() {
   const [imageUri, setImageUri] = useState<string | undefined>();
+  const [editedImageUri, setEditedImageUri] = useState<string | undefined>();
 
   const pickImage = useCallback(async () => {
     const response = await launchImageLibrary({
@@ -27,7 +35,22 @@ export default function App() {
         justifyContent: 'center',
       }}
     >
-      {imageUri ? (
+      {editedImageUri ? (
+        <Pressable
+          onPress={() => {
+            setEditedImageUri(undefined);
+            setImageUri(undefined);
+          }}
+          style={{ flex: 1, height: '100%', width: '100%' }}
+        >
+          <Image
+            height={Dimensions.get('screen').height}
+            source={{ uri: editedImageUri }}
+            style={{ resizeMode: 'contain' }}
+            width={Dimensions.get('screen').width}
+          />
+        </Pressable>
+      ) : imageUri ? (
         <View
           style={{
             alignItems: 'center',
@@ -38,6 +61,9 @@ export default function App() {
           }}
         >
           <SorollaView
+            onEditFinish={({ nativeEvent }) => {
+              setEditedImageUri(nativeEvent.uri);
+            }}
             style={{ height: '90%', width: '100%' }}
             uri={imageUri}
           />

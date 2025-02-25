@@ -7,12 +7,18 @@ import android.os.Build
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.LinearLayout
+import com.antropia.sorolla.event.OnEditFinishEvent
 import com.antropia.sorolla.mixin.RectHandler
 import com.antropia.sorolla.util.RectAnchor
 import com.antropia.sorolla.view.overlay.CroppingOverlayView
 import com.antropia.sorolla.view.overlay.OnCropAreaChangeListener
 import com.antropia.sorolla.view.overlay.TransformableImageView
+import com.facebook.react.bridge.Arguments
+import com.facebook.react.bridge.ReactContext
+import com.facebook.react.uimanager.UIManagerHelper
+
 
 class SorollaView : LinearLayout, RectHandler {
   private val gestureExclusionRect = Rect()
@@ -71,10 +77,27 @@ class SorollaView : LinearLayout, RectHandler {
     findViewById<Button>(R.id.restore_button).setOnClickListener {
       resetTransforms()
     }
+
+    findViewById<ImageButton>(R.id.accept_button).setOnClickListener {
+      finishEdition()
+    }
   }
 
   private fun resetTransforms() {
     imageView.restoreTransforms()
     croppingOverlayView.restoreOverlay()
+  }
+
+  private fun finishEdition() {
+    val reactContext = context as ReactContext
+    val surfaceId = UIManagerHelper.getSurfaceId(reactContext)
+    val eventDispatcher = UIManagerHelper.getEventDispatcherForReactTag(reactContext, id)
+
+    val uri = imageView.saveToFile(clippingArea = croppingOverlayView.cropRect ?: RectF())
+    val payload = Arguments.createMap()
+    payload.putString("uri", uri)
+
+    val event = OnEditFinishEvent(surfaceId, id, payload)
+    eventDispatcher?.dispatchEvent(event)
   }
 }

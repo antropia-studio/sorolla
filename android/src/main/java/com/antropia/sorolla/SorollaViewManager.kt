@@ -9,6 +9,7 @@ import com.facebook.react.uimanager.annotations.ReactProp
 import com.facebook.react.viewmanagers.SorollaViewManagerDelegate
 import com.facebook.react.viewmanagers.SorollaViewManagerInterface
 
+
 @ReactModule(name = SorollaViewManager.NAME)
 class SorollaViewManager : SimpleViewManager<SorollaView>(),
   SorollaViewManagerInterface<SorollaView> {
@@ -33,6 +34,21 @@ class SorollaViewManager : SimpleViewManager<SorollaView>(),
     value?.let {
       view?.setImage(value)
     }
+  }
+
+  override fun getExportedCustomBubblingEventTypeConstants(): Map<String, Any> {
+    val map: MutableMap<String, Any> = HashMap()
+    val bubblingMap: MutableMap<String, Any> = HashMap()
+
+    bubblingMap["phasedRegistrationNames"] = object : HashMap<String?, String?>() {
+      init {
+        put("bubbled", "onEditFinish")
+        put("captured", "onEditFinishCapture")
+      }
+    }
+
+    map["onEditFinish"] = bubblingMap
+    return map
   }
 
   companion object {

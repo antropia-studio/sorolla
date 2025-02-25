@@ -9,11 +9,12 @@ import android.util.AttributeSet
 import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.appcompat.widget.AppCompatImageView
 import com.antropia.sorolla.mixin.RectHandler
+import com.antropia.sorolla.mixin.ViewRenderer
 import com.antropia.sorolla.util.RectAnchor
 import com.antropia.sorolla.util.paddingHorizontal
 import com.antropia.sorolla.util.paddingVertical
 
-class TransformableImageView : AppCompatImageView, RectHandler {
+class TransformableImageView : AppCompatImageView, RectHandler, ViewRenderer {
   private var originalImageMatrix: Matrix = imageMatrix
   private var imageScale: Float = 1f
 
@@ -25,13 +26,14 @@ class TransformableImageView : AppCompatImageView, RectHandler {
     defStyleAttr
   )
 
-
   fun setImage(uri: String, onFinish: () -> Unit) {
     val imageUri = Uri.parse(uri)
     setImageURI(imageUri)
 
     post { setupInitialImageScale(onFinish) }
   }
+
+  fun saveToFile(clippingArea: RectF) = renderToFile(clippingArea)
 
   /**
    * Moves the image the given distances in the two axis.

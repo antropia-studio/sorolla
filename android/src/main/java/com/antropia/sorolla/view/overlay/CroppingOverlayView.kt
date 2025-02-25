@@ -44,7 +44,6 @@ interface OnCropAreaChangeListener {
 class CroppingOverlayView : View, RectHandler, Interpolator {
   private var workingRect: RectF? = null
   private var imageRect: RectF? = null
-  private var cropRect: RectF? = null
   private var originalRect: RectF? = null
   private var activeAnchor: RectAnchor? = null
   private var activeMove: Boolean = false
@@ -55,6 +54,7 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
   private val cropUpdateHandler = Handler(Looper.getMainLooper())
   private var pendingCropUpdate: Runnable? = null
   private val renderer = Renderer(this)
+  var cropRect: RectF? = null
 
   constructor(context: Context?) : super(context)
   constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
