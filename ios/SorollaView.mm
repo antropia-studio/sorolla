@@ -5,6 +5,12 @@
 #import "generated/RNSorollaViewSpec/Props.h"
 #import "generated/RNSorollaViewSpec/RCTComponentViewHelpers.h"
 
+#if __has_include("Sorolla/Sorolla-Swift.h")
+#import "Sorolla/Sorolla-Swift.h"
+#else
+#import "Sorolla-Swift.h"
+#endif
+
 #import "RCTFabricComponentsPlugins.h"
 
 using namespace facebook::react;
@@ -14,7 +20,7 @@ using namespace facebook::react;
 @end
 
 @implementation SorollaView {
-    UIView * _view;
+  SwSorollaView* _view;
 }
 
 + (ComponentDescriptorProvider)componentDescriptorProvider
@@ -28,7 +34,7 @@ using namespace facebook::react;
     static const auto defaultProps = std::make_shared<const SorollaViewProps>();
     _props = defaultProps;
 
-    _view = [[UIView alloc] init];
+    _view = [[SwSorollaView alloc] init];
 
     self.contentView = _view;
   }
@@ -41,9 +47,9 @@ using namespace facebook::react;
     const auto &oldViewProps = *std::static_pointer_cast<SorollaViewProps const>(_props);
     const auto &newViewProps = *std::static_pointer_cast<SorollaViewProps const>(props);
 
-    if (oldViewProps.color != newViewProps.color) {
-        NSString * colorToConvert = [[NSString alloc] initWithUTF8String: newViewProps.color.c_str()];
-        [_view setBackgroundColor:[self hexStringToColor:colorToConvert]];
+    if (oldViewProps.uri != newViewProps.uri) {
+      NSString *uri = [[NSString alloc] initWithUTF8String: newViewProps.uri.c_str()];
+      [_view setUri:uri];
     }
 
     [super updateProps:props oldProps:oldProps];
@@ -52,20 +58,6 @@ using namespace facebook::react;
 Class<RCTComponentViewProtocol> SorollaViewCls(void)
 {
     return SorollaView.class;
-}
-
-- hexStringToColor:(NSString *)stringToConvert
-{
-    NSString *noHashString = [stringToConvert stringByReplacingOccurrencesOfString:@"#" withString:@""];
-    NSScanner *stringScanner = [NSScanner scannerWithString:noHashString];
-
-    unsigned hex;
-    if (![stringScanner scanHexInt:&hex]) return nil;
-    int r = (hex >> 16) & 0xFF;
-    int g = (hex >> 8) & 0xFF;
-    int b = (hex) & 0xFF;
-
-    return [UIColor colorWithRed:r / 255.0f green:g / 255.0f blue:b / 255.0f alpha:1.0f];
 }
 
 @end
