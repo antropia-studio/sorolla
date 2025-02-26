@@ -1,6 +1,8 @@
 import SnapKit
 import UIKit
 
+let PADDING = 10.0
+
 @objc public class SwSorollaView: UIView {
   lazy var imageView = UIImageView()
   lazy var croppingOverlayView = CroppingOverlayView()
@@ -33,8 +35,8 @@ import UIKit
             height: image.size.height * scale
           )
           let origin = CGPoint(
-            x: (imageViewSize.width - imageSize.width) / 2,
-            y: (imageViewSize.height - imageSize.height) / 2
+            x: PADDING + (imageViewSize.width - imageSize.width) / 2.0,
+            y: PADDING + (imageViewSize.height - imageSize.height) / 2.0
           )
           let rect = CGRect(origin: origin, size: imageSize)
           
@@ -51,14 +53,13 @@ import UIKit
     imageView.snp.makeConstraints { (make) -> Void in
       make.edges
         .equalTo(snp.edges)
-        .inset(UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10))
+        .inset(UIEdgeInsets(top: PADDING, left: PADDING, bottom: PADDING, right: PADDING))
     }
     
     self.addSubview(croppingOverlayView)
     croppingOverlayView.snp.makeConstraints { (make) -> Void in
       make.edges
         .equalTo(snp.edges)
-        .inset(UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10))
     }
   }
 }

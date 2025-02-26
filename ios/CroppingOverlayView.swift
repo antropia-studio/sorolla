@@ -1,6 +1,10 @@
 import SnapKit
 import UIKit
 
+let CORNER_STROKE_HALF_WIDTH = 2.0
+let ANCHOR_LENGTH = 25.0
+let MID_ANCHOR_LENGTH = ANCHOR_LENGTH / 2.0
+
 @objc public class CroppingOverlayView: UIView {
   lazy var imageView = UIImageView()
   var imageRect: CGRect?
@@ -26,6 +30,7 @@ import UIKit
     
     self.drawVerticalLines(context: context, rect: imageRect)
     self.drawHorizontalLines(context: context, rect: imageRect)
+    self.drawAnchors(context: context, rect: imageRect)
   }
   
   private func drawHorizontalLines(context: CGContext, rect: CGRect) {
@@ -57,6 +62,57 @@ import UIKit
   }
   
   private func drawAnchors(context: CGContext, rect: CGRect) {
+    UIColor.white.setStroke()
     
+    let left = rect.minX - CORNER_STROKE_HALF_WIDTH
+    let top = rect.minY - CORNER_STROKE_HALF_WIDTH
+    let right = rect.maxX + CORNER_STROKE_HALF_WIDTH
+    let bottom = rect.maxY + CORNER_STROKE_HALF_WIDTH
+    
+    let cornersPath = UIBezierPath()
+
+    // Top-left corner: ⌜
+    cornersPath.move(to: CGPoint(x: left, y: top + ANCHOR_LENGTH))
+    cornersPath.addLine(to: CGPoint(x: left, y: top))
+    cornersPath.addLine(to: CGPoint(x: left + ANCHOR_LENGTH, y: top))
+
+    // Top-right corner: ⌝
+    cornersPath.move(to: CGPoint(x: right, y: top + ANCHOR_LENGTH))
+    cornersPath.addLine(to: CGPoint(x: right, y: top))
+    cornersPath.addLine(to: CGPoint(x: right - ANCHOR_LENGTH, y: top))
+
+    // Bottom-left corner: ⌞
+    cornersPath.move(to: CGPoint(x: left, y: bottom - ANCHOR_LENGTH))
+    cornersPath.addLine(to: CGPoint(x: left, y: bottom))
+    cornersPath.addLine(to: CGPoint(x: left + ANCHOR_LENGTH, y: bottom))
+
+    // Bottom-right corner: ⌟
+    cornersPath.move(to: CGPoint(x: right, y: bottom - ANCHOR_LENGTH))
+    cornersPath.addLine(to: CGPoint(x: right, y: bottom))
+    cornersPath.addLine(to: CGPoint(x: right - ANCHOR_LENGTH, y: bottom))
+
+    cornersPath.lineWidth = 4
+    cornersPath.stroke()
+
+    let edgesPath = UIBezierPath()
+
+    // Left edge
+    edgesPath.move(to: CGPoint(x: left, y: rect.midY - MID_ANCHOR_LENGTH))
+    edgesPath.addLine(to: CGPoint(x: left, y: rect.midY + MID_ANCHOR_LENGTH))
+
+    // Top edge
+    edgesPath.move(to: CGPoint(x: rect.midX - MID_ANCHOR_LENGTH, y: top))
+    edgesPath.addLine(to: CGPoint(x: rect.midX + MID_ANCHOR_LENGTH, y: top))
+
+    // Right edge
+    edgesPath.move(to: CGPoint(x: right, y: rect.midY - MID_ANCHOR_LENGTH))
+    edgesPath.addLine(to: CGPoint(x: right, y: rect.midY + MID_ANCHOR_LENGTH))
+
+    // Bottom edge
+    edgesPath.move(to: CGPoint(x: rect.midX - MID_ANCHOR_LENGTH, y: bottom))
+    edgesPath.addLine(to: CGPoint(x: rect.midX + MID_ANCHOR_LENGTH, y: bottom))
+
+    edgesPath.lineWidth = 4
+    edgesPath.stroke()
   }
 }
