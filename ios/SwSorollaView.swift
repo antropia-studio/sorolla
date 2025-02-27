@@ -4,8 +4,9 @@ import UIKit
 let PADDING = 10.0
 
 @objc public class SwSorollaView: UIView {
-  lazy var imageView = UIImageView()
-  lazy var croppingOverlayView = CroppingOverlayView()
+  private lazy var imageView = UIImageView()
+  private lazy var croppingOverlayView = CroppingOverlayView()
+  private var pangesture: UIPanGestureRecognizer!
 
   override init(frame: CGRect) {
     super.init(frame: frame)

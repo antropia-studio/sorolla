@@ -1,39 +1,12 @@
 import SnapKit
 import UIKit
 
-let CORNER_STROKE_HALF_WIDTH = 2.0
-let ANCHOR_LENGTH = 25.0
-let MID_ANCHOR_LENGTH = ANCHOR_LENGTH / 2.0
+private let CORNER_STROKE_HALF_WIDTH = 2.0
+private let ANCHOR_LENGTH = 25.0
+private let MID_ANCHOR_LENGTH = ANCHOR_LENGTH / 2.0
 
-@objc public class CroppingOverlayView: UIView {
-  lazy var imageView = UIImageView()
-  var imageRect: CGRect?
-
-  override init(frame: CGRect) {
-    super.init(frame: frame)
-    
-    backgroundColor = .clear
-  }
-
-  required init(coder aDecoder: NSCoder) {
-    fatalError("init(coder:) has not been implemented")
-  }
-  
-  func setImageRect(rect: CGRect) {
-    self.imageRect = rect
-    setNeedsDisplay()
-  }
-  
-  override public func draw(_ rect: CGRect) {
-    guard let imageRect = self.imageRect else { return }
-    guard let context = UIGraphicsGetCurrentContext() else { return }
-    
-    self.drawVerticalLines(context: context, rect: imageRect)
-    self.drawHorizontalLines(context: context, rect: imageRect)
-    self.drawAnchors(context: context, rect: imageRect)
-  }
-  
-  private func drawHorizontalLines(context: CGContext, rect: CGRect) {
+@objc extension CroppingOverlayView {
+  func drawHorizontalLines(context: CGContext, rect: CGRect) {
     UIColor.white.setStroke()
     
     let slotHeight = rect.height / 3
@@ -47,7 +20,7 @@ let MID_ANCHOR_LENGTH = ANCHOR_LENGTH / 2.0
     }
   }
   
-  private func drawVerticalLines(context: CGContext, rect: CGRect) {
+  func drawVerticalLines(context: CGContext, rect: CGRect) {
     UIColor.white.setStroke()
     
     let slotWidth = rect.width / 3
@@ -61,7 +34,7 @@ let MID_ANCHOR_LENGTH = ANCHOR_LENGTH / 2.0
     }
   }
   
-  private func drawAnchors(context: CGContext, rect: CGRect) {
+  func drawAnchors(context: CGContext, rect: CGRect) {
     UIColor.white.setStroke()
     
     let left = rect.minX - CORNER_STROKE_HALF_WIDTH
