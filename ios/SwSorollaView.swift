@@ -6,12 +6,14 @@ let PADDING = 10.0
 @objc public class SwSorollaView: UIView {
   private lazy var imageView = UIImageView()
   private lazy var croppingOverlayView = CroppingOverlayView()
-  private var pangesture: UIPanGestureRecognizer!
+  private var panGesture: UIPanGestureRecognizer!
+  private var lastPanGestureLocation: CGPoint?
 
   override init(frame: CGRect) {
     super.init(frame: frame)
-    
+
     self.createViews()
+    self.createGestureRecognizers()
   }
 
   required init(coder aDecoder: NSCoder) {
@@ -61,6 +63,34 @@ let PADDING = 10.0
     croppingOverlayView.snp.makeConstraints { (make) -> Void in
       make.edges
         .equalTo(snp.edges)
+    }
+  }
+
+  private func createGestureRecognizers() {
+    panGesture = UIPanGestureRecognizer()
+    isUserInteractionEnabled = true
+    addGestureRecognizer(panGesture)
+    panGesture.addTarget(self, action: #selector(draggableFunction))
+  }
+
+  @objc func draggableFunction(_ sender: UIPanGestureRecognizer) {
+    let location = sender.location(in: self.croppingOverlayView)
+
+    switch (sender.state) {
+    case .began:
+      self.croppingOverlayView.onPanGestureStart(on: location)
+      self.lastPanGestureLocation = location
+    case .ended:
+      self.croppingOverlayView.onPanGestureEnded()
+      self.lastPanGestureLocation = nil
+    default:
+      let translation = CGPoint(
+        x: location.x - self.lastPanGestureLocation!.x,
+        y: location.y - self.lastPanGestureLocation!.y
+      )
+
+      self.croppingOverlayView.onPanGestureMove(translation: translation)
+      self.lastPanGestureLocation = location
     }
   }
 }

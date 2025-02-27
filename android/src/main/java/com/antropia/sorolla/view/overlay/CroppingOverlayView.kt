@@ -177,7 +177,6 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
     }
   }
 
-
   private fun detectMoveAction(x: Float, y: Float): Boolean {
     val cRect = cropRect ?: return false
 
