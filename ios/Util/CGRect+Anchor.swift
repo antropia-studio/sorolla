@@ -1,6 +1,10 @@
 import Foundation
 
 extension CGRect {
+  init(rect: CGRect) {
+    self.init(origin: rect.origin, size: rect.size)
+  }
+
   var topLeft: CGPoint { return CGPoint(x: minX, y: minY) }
   var topRight: CGPoint { return CGPoint(x: maxX, y: minY) }
   var bottomLeft: CGPoint { return CGPoint(x: minX, y: maxY) }
@@ -10,6 +14,8 @@ extension CGRect {
   var right: CGPoint { return CGPoint(x: maxX, y: midY) }
   var bottom: CGPoint { return CGPoint(x: midX, y: maxY) }
   var center: CGPoint { return CGPoint(x: midX, y: midY) }
+
+  var aspectRatio: CGFloat { return width / height }
 
   func getAnchorPoint(_ anchor: Anchor) -> CGPoint {
     switch anchor {
@@ -21,7 +27,6 @@ extension CGRect {
     case .top: return top
     case .right: return right
     case .bottom: return bottom
-    case .center: return center
     }
   }
 
@@ -51,9 +56,6 @@ extension CGRect {
       moveRight(dx: translation.x, minWidth: minSize.width)
     case .bottom:
       moveBottom(dy: translation.y, minHeight: minSize.height)
-    case .center:
-      origin.x += translation.x
-      origin.y += translation.y
     }
   }
 

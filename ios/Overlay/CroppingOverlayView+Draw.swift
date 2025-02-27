@@ -8,16 +8,18 @@ private let MID_ANCHOR_LENGTH = ANCHOR_LENGTH / 2.0
 @objc extension CroppingOverlayView {
   func drawHorizontalLines(context: CGContext, rect: CGRect) {
     UIColor.white.setStroke()
-    
+
+    let lines = UIBezierPath()
+
     let slotHeight = rect.height / 3
     for i in 0...3 {
       let y = rect.minY + slotHeight * CGFloat(i)
-      let line = UIBezierPath()
-      line.move(to: CGPoint(x: rect.minX, y: y))
-      line.addLine(to: CGPoint(x: rect.maxX, y: y))
-      line.lineWidth = i == 0 || i == 3 ? 1 : 0.5
-      line.stroke()
+      lines.move(to: CGPoint(x: rect.minX, y: y))
+      lines.addLine(to: CGPoint(x: rect.maxX, y: y))
+      lines.lineWidth = i == 0 || i == 3 ? 1 : 0.5
     }
+
+    lines.stroke()
   }
   
   func drawVerticalLines(context: CGContext, rect: CGRect) {

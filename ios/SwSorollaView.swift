@@ -4,7 +4,7 @@ import UIKit
 let PADDING = 10.0
 
 @objc public class SwSorollaView: UIView {
-  private lazy var imageView = UIImageView()
+  private lazy var imageView = TransformableImageView()
   private lazy var croppingOverlayView = CroppingOverlayView()
   private var panGesture: UIPanGestureRecognizer!
   private var lastPanGestureLocation: CGPoint?
@@ -16,8 +16,8 @@ let PADDING = 10.0
     self.createGestureRecognizers()
   }
 
-  required init(coder aDecoder: NSCoder) {
-    fatalError("init(coder:) has not been implemented")
+  required init?(coder aDecoder: NSCoder) {
+    super.init(coder: aDecoder)
   }
 
   @objc public func setUri(_ uri: String) {
@@ -27,8 +27,10 @@ let PADDING = 10.0
         let image = UIImage(data: data)
       {
         DispatchQueue.main.async {
-          let imageViewSize = self.imageView.frame.size
           self.imageView.image = image
+          self.imageView.reset()
+
+          let imageViewSize = self.imageView.frame.size
           let scale = min(
             imageViewSize.width / image.size.width,
             imageViewSize.height / image.size.height
@@ -81,7 +83,13 @@ let PADDING = 10.0
       self.croppingOverlayView.onPanGestureStart(on: location)
       self.lastPanGestureLocation = location
     case .ended:
-      self.croppingOverlayView.onPanGestureEnded()
+      let result = self.croppingOverlayView.onPanGestureEnded()
+      self.imageView.refit(
+        scale: result.scale,
+        anchor: result.anchor,
+        fromRect: result.fromRect,
+        toRect: result.toRect
+      )
       self.lastPanGestureLocation = nil
     default:
       let translation = CGPoint(

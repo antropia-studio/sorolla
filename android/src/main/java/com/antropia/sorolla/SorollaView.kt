@@ -69,7 +69,6 @@ class SorollaView : LinearLayout, RectHandler, ViewAnimator {
     imageView.setImage(uri) { croppingOverlayView.setImageView(imageView) }
   }
 
-
   private fun setupCropListeners() {
     croppingOverlayView.setOnCropAreaChangeListener(object : OnCropAreaChangeListener {
       override fun onScale(scale: Float, anchor: RectAnchor, fromRect: RectF, toRect: RectF) {
