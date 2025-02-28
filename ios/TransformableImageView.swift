@@ -23,25 +23,23 @@ class TransformableImageView: UIImageView {
     fromRect: CGRect,
     toRect: CGRect
   ) {
-    let fromPoint = fromRect.bottomRight
-    let toPoint = toRect.bottomRight
-    let imageScale = self.image!.size.width / self.image!.size.height
+    /**
+     * We create a vector system using the center of the view the origin of all transformations.
+     * This is like this, because CGAffineTransforms scales images from the center of the view,
+     * and so it's much easier to calculate everything around this fixed point.
+     */
+    
+    let center = fromRect.center
+    let fromVector = fromRect.getAnchorPoint(anchor) - center
+    let toVector = toRect.getAnchorPoint(anchor) - center
+    let scaledImageAnchor = fromVector * scale
+    let translation = toVector - scaledImageAnchor
 
-    let anchor = CGPoint(x: self.frame.width / 2, y: (self.frame.width / imageScale) / 2)
-
-//    UIView.animate(withDuration: 2) {
-//      self.transform = self.transform.translatedBy(x: anchor.x, y: anchor.y)
-//      self.layoutIfNeeded()
-//    } completion: { finished in
-//      UIView.animate(withDuration: 2) {
-//        self.transform = self.transform.scaledBy(x: scale, y: scale)
-//      } completion: { finished in
-//        UIView.animate(withDuration: 2) {
-//          self.transform = self.transform.translatedBy(x: -anchor.x, y: -anchor.y)
-//        } completion: { finished in
-//
-//        }
-//      }
-//    }
+    UIView.animate(withDuration: 1) {
+      self.transform = self.transform
+        .scaledBy(x: scale, y: scale)
+        .translatedBy(x: translation.dx, y: translation.dy)
+      self.layoutIfNeeded()
+    }
   }
 }

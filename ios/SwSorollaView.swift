@@ -1,11 +1,11 @@
 import SnapKit
 import UIKit
 
-let PADDING = 10.0
+private let PADDING = 10.0
 
 @objc public class SwSorollaView: UIView {
   private lazy var imageView = TransformableImageView()
-  private lazy var croppingOverlayView = CroppingOverlayView()
+  private lazy var croppingOverlayView = CroppingOverlayView(padding: PADDING)
   private var panGesture: UIPanGestureRecognizer!
   private var lastPanGestureLocation: CGPoint?
 

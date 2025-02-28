@@ -9,4 +9,12 @@ extension CGPoint {
       abs(point.x - x) <= radius &&
       abs(point.y - y) <= radius
   }
+
+  static func *(lhs: CGPoint, factor: CGFloat) -> CGPoint {
+    return CGPoint(x: lhs.x * factor, y: lhs.y * factor)
+  }
+
+  static func -(end: CGPoint, start: CGPoint) -> CGVector {
+    return CGVector(dx: end.x - start.x, dy: end.y - start.y)
+  }
 }
