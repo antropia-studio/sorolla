@@ -1,6 +1,8 @@
 import UIKit
 
 class TransformableImageView: UIImageView {
+  private var imageScale: CGFloat = 1.0
+
   init() {
     super.init(frame: CGRect.zero)
   }
@@ -15,6 +17,7 @@ class TransformableImageView: UIImageView {
 
   func reset() {
     self.transform = CGAffineTransform.identity
+    self.imageScale = 1.0
   }
 
   func refit(
@@ -23,19 +26,20 @@ class TransformableImageView: UIImageView {
     fromRect: CGRect,
     toRect: CGRect
   ) {
+    self.imageScale *= scale
+
     /**
-     * We create a vector system using the center of the view the origin of all transformations.
+     * We create a vector system using the center of the view as the origin of all transformations.
      * This is like this, because CGAffineTransforms scales images from the center of the view,
      * and so it's much easier to calculate everything around this fixed point.
      */
-    
-    let center = fromRect.center
+    let center = frame.center
     let fromVector = fromRect.getAnchorPoint(anchor) - center
     let toVector = toRect.getAnchorPoint(anchor) - center
-    let scaledImageAnchor = fromVector * scale
-    let translation = toVector - scaledImageAnchor
+    let referencePoint = fromVector * scale
+    let translation = (toVector - referencePoint) / imageScale
 
-    UIView.animate(withDuration: 1) {
+    UIView.animate(withDuration: 0.5) {
       self.transform = self.transform
         .scaledBy(x: scale, y: scale)
         .translatedBy(x: translation.dx, y: translation.dy)

@@ -28,7 +28,8 @@ struct PanGestureEndResult {
   var animationStartRect: CGRect?
   var animationTargetRect: CGRect?
   var animationProgress: CGFloat = 0
-  var animationStep: CGFloat = 0.05
+  var animationStart: CFTimeInterval?
+  var animationDuration: TimeInterval?
 
   convenience init(padding: CGFloat) {
     self.init(frame: .zero)
@@ -56,7 +57,8 @@ struct PanGestureEndResult {
   override public func draw(_ rect: CGRect) {
     guard let cropRect = self.panCropRect ?? self.cropRect else { return }
     guard let context = UIGraphicsGetCurrentContext() else { return }
-    
+
+    self.drawBackground(context: context, rect: cropRect)
     self.drawVerticalLines(context: context, rect: cropRect)
     self.drawHorizontalLines(context: context, rect: cropRect)
     self.drawAnchors(context: context, rect: cropRect)
@@ -119,7 +121,7 @@ struct PanGestureEndResult {
 
     let scale = min(toRect.width / fromRect.width, toRect.height / fromRect.height)
 
-    animateCropRect(from: fromRect, to: toRect, duration: 0.3)
+    animateCropRect(from: fromRect, to: toRect, duration: 0.5)
     panCropRect = nil
     self.panAnchor = nil
 
