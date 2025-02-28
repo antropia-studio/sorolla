@@ -1,2 +1,1 @@
-export { default as SorollaView } from './SorollaViewNativeComponent';
-export * from './SorollaViewNativeComponent';
+export { SorollaView } from './SorollaView';

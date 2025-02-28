@@ -3,12 +3,14 @@ import type { BubblingEventHandler } from 'react-native/Libraries/Types/CodegenT
 
 import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
 
-interface EditFinishEvent {
+export type Mode = 'none' | 'transform';
+
+export interface NativeProps extends ViewProps {
+  onEditFinish: BubblingEventHandler<Readonly<EditFinishEvent>>;
   uri: string;
 }
 
-interface NativeProps extends ViewProps {
-  onEditFinish: BubblingEventHandler<Readonly<EditFinishEvent>>;
+interface EditFinishEvent {
   uri: string;
 }
 

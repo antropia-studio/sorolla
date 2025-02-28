@@ -30,7 +30,6 @@ export default function App() {
     <SafeAreaView
       style={{
         alignItems: 'center',
-        backgroundColor: '#0e0e0e',
         flex: 1,
         justifyContent: 'center',
       }}
@@ -55,16 +54,13 @@ export default function App() {
           style={{
             alignItems: 'center',
             flexDirection: 'column',
-            height: '100%',
-            justifyContent: 'center',
-            width: '100%',
+            justifyContent: 'space-between',
           }}
         >
           <SorollaView
             onEditFinish={({ nativeEvent }) => {
               setEditedImageUri(nativeEvent.uri);
             }}
-            style={{ height: '90%', width: '100%' }}
             uri={imageUri}
           />
 
