@@ -16,7 +16,6 @@ struct PanGestureEndResult {
 
 @objc public class CroppingOverlayView: UIView {
   private lazy var imageView = UIImageView()
-  private let rectangleLayer = CAShapeLayer()
   private var imageRect: CGRect?
   var cropRect: CGRect?
   private var panCropRect: CGRect?
@@ -40,20 +39,23 @@ struct PanGestureEndResult {
     super.init(frame: frame)
 
     backgroundColor = .clear
-    layer.addSublayer(rectangleLayer)
   }
 
   required init?(coder aDecoder: NSCoder) {
     super.init(coder: aDecoder)
   }
   
-  func setImageRect(rect: CGRect) {
+  func setImageRect(rect: CGRect, update: Bool = true) {
     self.imageRect = CGRect(rect: rect)
     self.cropRect = CGRect(rect: rect)
+    self.panCropRect = nil
+    self.panAnchor = nil
 
-    setNeedsDisplay()
+    if (update) {
+      setNeedsDisplay()
+    }
   }
-  
+
   override public func draw(_ rect: CGRect) {
     guard let cropRect = self.panCropRect ?? self.cropRect else { return }
     guard let context = UIGraphicsGetCurrentContext() else { return }

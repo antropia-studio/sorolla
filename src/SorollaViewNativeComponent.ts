@@ -1,11 +1,25 @@
-import type { ViewProps } from 'react-native';
-import type { BubblingEventHandler } from 'react-native/Libraries/Types/CodegenTypes';
+import type { HostComponent, ViewProps } from 'react-native';
+import type {
+  BubblingEventHandler,
+  WithDefault,
+} from 'react-native/Libraries/Types/CodegenTypes';
 
+import React from 'react';
+import codegenNativeCommands from 'react-native/Libraries/Utilities/codegenNativeCommands';
 import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
 
 export type Mode = 'none' | 'transform';
 
+export interface NativeCommands {
+  clear: (viewRef: React.ElementRef<HostComponent<NativeProps>>) => void;
+}
+
+export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
+  supportedCommands: ['clear'],
+});
+
 export interface NativeProps extends ViewProps {
+  mode?: WithDefault<Mode, 'none'>;
   onEditFinish: BubblingEventHandler<Readonly<EditFinishEvent>>;
   uri: string;
 }

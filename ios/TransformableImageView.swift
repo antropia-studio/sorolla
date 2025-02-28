@@ -18,8 +18,15 @@ class TransformableImageView: UIImageView {
     super.init(coder: aDecoder)
   }
 
-  func reset() {
-    self.transform = CGAffineTransform.identity
+  func reset(animated: Bool = false) {
+    if (animated) {
+      UIView.animate(withDuration: 0.5) {
+        self.transform = CGAffineTransform.identity
+      }
+    } else {
+      self.transform = CGAffineTransform.identity
+    }
+
     self.imageScale = 1.0
   }
 

@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import { Icon } from '../../icon';
 import { IconButton } from '../IconButton';
 
-interface Props {
+export interface EditToolsProps {
   onPaintPress: () => void;
   onSettingsPress: () => void;
   onTransformPress: () => void;
@@ -13,7 +13,7 @@ export const EditTools = ({
   onPaintPress,
   onSettingsPress,
   onTransformPress,
-}: Props) => {
+}: EditToolsProps) => {
   return (
     <View
       style={{

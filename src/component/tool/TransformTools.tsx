@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import { Icon } from '../../icon';
 import { IconButton } from '../IconButton';
 
-interface Props {
+export interface TransformToolsProps {
   onAspectRatioPress: () => void;
   onMirrorPress: () => void;
   onRotatePress: () => void;
@@ -13,7 +13,7 @@ export const TransformTools = ({
   onAspectRatioPress,
   onMirrorPress,
   onRotatePress,
-}: Props) => {
+}: TransformToolsProps) => {
   return (
     <View
       style={{

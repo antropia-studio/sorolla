@@ -6,6 +6,7 @@ private let PADDING = 10.0
 @objc public class SwSorollaView: UIView {
   private lazy var imageView = TransformableImageView()
   private lazy var croppingOverlayView = CroppingOverlayView(padding: PADDING)
+  private var mode: Mode = .none
   private var panGesture: UIPanGestureRecognizer!
   private var panAction: PanAction? = nil
   private var lastPanGestureLocation: CGPoint?
@@ -31,37 +32,48 @@ private let PADDING = 10.0
         DispatchQueue.main.async {
           self.imageView.image = image
           self.imageView.reset()
-
-          let imageViewSize = self.imageView.frame.size
-          let scale = min(
-            imageViewSize.width / image.size.width,
-            imageViewSize.height / image.size.height
-          )
-          let imageSize = CGSize(
-            width: image.size.width * scale,
-            height: image.size.height * scale
-          )
-          let origin = CGPoint(
-            x: PADDING + (imageViewSize.width - imageSize.width) / 2.0,
-            y: PADDING + (imageViewSize.height - imageSize.height) / 2.0
-          )
-          let rect = CGRect(origin: origin, size: imageSize)
-          
-          self.croppingOverlayView.setImageRect(rect: rect)
+          self.croppingOverlayView.setImageRect(rect: self.imageView.contentClippingRect)
         }
       }
     }
   }
 
+  @objc public func setMode(_ strMode: String) {
+    let mode = Mode(rawValue: strMode)!
+
+    switch mode {
+    case .none:
+      isUserInteractionEnabled = false
+      UIView.animate(withDuration: 0.2, animations: {
+        self.croppingOverlayView.alpha = 0
+      }, completion: { finished in
+        self.croppingOverlayView.isHidden = true
+      })
+    case .transform:
+      isUserInteractionEnabled = true
+      self.croppingOverlayView.setNeedsDisplay()
+      self.croppingOverlayView.isHidden = false
+      UIView.animate(withDuration: 0.2, animations: {
+        self.croppingOverlayView.alpha = 1
+      })
+    }
+  }
+
+  @objc public func resetCurrentTransform() {
+    self.imageView.reset(animated: true)
+    self.croppingOverlayView.setImageRect(rect: self.imageView.contentClippingRect, update: false)
+  }
+
   private func createViews() {
     self.addSubview(imageView)
-
     imageView.snp.makeConstraints { (make) -> Void in
       make.edges
         .equalTo(snp.edges)
         .inset(UIEdgeInsets(top: PADDING, left: PADDING, bottom: PADDING, right: PADDING))
     }
-    
+
+    croppingOverlayView.isHidden = true
+    croppingOverlayView.alpha = 0
     self.addSubview(croppingOverlayView)
     croppingOverlayView.snp.makeConstraints { (make) -> Void in
       make.edges
@@ -73,6 +85,7 @@ private let PADDING = 10.0
     panGesture = UIPanGestureRecognizer()
     isUserInteractionEnabled = true
     addGestureRecognizer(panGesture)
+
     panGesture.addTarget(self, action: #selector(draggableFunction))
   }
 

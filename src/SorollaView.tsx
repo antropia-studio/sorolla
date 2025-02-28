@@ -1,19 +1,40 @@
-import { useState } from 'react';
+import { type Ref, useImperativeHandle, useRef, useState } from 'react';
 import { Dimensions, View } from 'react-native';
 
 import { IconButton } from './component/IconButton';
 import { Tools } from './component/tool';
 import { Icon } from './icon';
 import {
+  Commands,
   type Mode,
   type NativeProps,
   default as NativeSorollaView,
 } from './SorollaViewNativeComponent';
 
-export interface SorollaViewProps extends NativeProps {}
+export interface SorollaViewProps extends Omit<NativeProps, 'mode'> {}
 
-export const SorollaView = ({ style, ...props }: SorollaViewProps) => {
+export type SorollaViewRef = {
+  reset: () => void;
+};
+
+export const SorollaView = (
+  { style, ...props }: SorollaViewProps,
+  ref: Ref<SorollaViewRef>
+) => {
+  const nativeRef = useRef<InstanceType<typeof NativeSorollaView> | null>(null);
   const [mode, setMode] = useState<Mode>('none');
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      reset: () => {
+        if (!nativeRef.current) return;
+
+        Commands.clear(nativeRef.current);
+      },
+    }),
+    []
+  );
 
   return (
     <View
@@ -26,6 +47,8 @@ export const SorollaView = ({ style, ...props }: SorollaViewProps) => {
       }}
     >
       <NativeSorollaView
+        mode={mode}
+        ref={nativeRef}
         style={[
           {
             height: Dimensions.get('screen').height * 0.7,
@@ -45,7 +68,14 @@ export const SorollaView = ({ style, ...props }: SorollaViewProps) => {
         }}
       >
         {mode === 'transform' && (
-          <IconButton onPress={() => setMode('none')}>
+          <IconButton
+            onPress={() => {
+              if (nativeRef.current) {
+                Commands.clear(nativeRef.current);
+              }
+              setMode('none');
+            }}
+          >
             <Icon.Cancel />
           </IconButton>
         )}

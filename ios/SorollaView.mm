@@ -44,15 +44,29 @@ using namespace facebook::react;
 
 - (void)updateProps:(Props::Shared const &)props oldProps:(Props::Shared const &)oldProps
 {
-    const auto &oldViewProps = *std::static_pointer_cast<SorollaViewProps const>(_props);
-    const auto &newViewProps = *std::static_pointer_cast<SorollaViewProps const>(props);
+  const auto &oldViewProps = *std::static_pointer_cast<SorollaViewProps const>(_props);
+  const auto &newViewProps = *std::static_pointer_cast<SorollaViewProps const>(props);
 
-    if (oldViewProps.uri != newViewProps.uri) {
-      NSString *uri = [[NSString alloc] initWithUTF8String: newViewProps.uri.c_str()];
-      [_view setUri:uri];
-    }
+  if (oldViewProps.uri != newViewProps.uri) {
+    NSString *uri = [[NSString alloc] initWithUTF8String: newViewProps.uri.c_str()];
+    [_view setUri:uri];
+  }
 
-    [super updateProps:props oldProps:oldProps];
+  if (oldViewProps.mode != newViewProps.mode) {
+    NSString *mode = [[NSString alloc] initWithUTF8String: facebook::react::toString(newViewProps.mode).c_str()];
+    [_view setMode:mode];
+  }
+
+  [super updateProps:props oldProps:oldProps];
+}
+
+- (void)handleCommand:(const NSString *)commandName args:(const NSArray *)args
+{
+  RCTSorollaViewHandleCommand(self, commandName, args); //
+}
+
+- (void)clear {
+  [_view resetCurrentTransform];
 }
 
 Class<RCTComponentViewProtocol> SorollaViewCls(void)
