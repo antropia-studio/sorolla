@@ -43,8 +43,8 @@ struct PanGestureEndResult {
     layer.addSublayer(rectangleLayer)
   }
 
-  required init(coder aDecoder: NSCoder) {
-    fatalError("init(coder:) has not been implemented")
+  required init?(coder aDecoder: NSCoder) {
+    super.init(coder: aDecoder)
   }
   
   func setImageRect(rect: CGRect) {
@@ -70,8 +70,8 @@ struct PanGestureEndResult {
     displayLink = nil
   }
 
-  func onPanGestureStart(on location: CGPoint) {
-    guard let cropRect = cropRect else { return }
+  func onPanGestureStart(on location: CGPoint) -> PanAction? {
+    guard let cropRect = cropRect else { return nil }
 
     panAnchor = Anchor.allCases.first { anchor in
       return cropRect
@@ -80,9 +80,11 @@ struct PanGestureEndResult {
     }
 
     panCropRect = CGRect(rect: cropRect)
+
+    return panAnchor != nil ? .crop : .move
   }
 
-  func onPanGestureMove(translation: CGPoint) {
+  func onPanGestureMove(translation: CGVector) {
     guard let panAnchor = panAnchor else { return }
 
     panCropRect?.move(anchor: panAnchor, translation: translation)

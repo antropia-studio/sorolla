@@ -1,6 +1,8 @@
 import Foundation
 
 extension CGPoint {
+  var vector: CGVector { return CGVector(dx: x, dy: y) }
+
   func isInside(
     point: CGPoint,
     radius: CGFloat

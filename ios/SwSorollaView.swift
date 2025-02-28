@@ -7,6 +7,7 @@ private let PADDING = 10.0
   private lazy var imageView = TransformableImageView()
   private lazy var croppingOverlayView = CroppingOverlayView(padding: PADDING)
   private var panGesture: UIPanGestureRecognizer!
+  private var panAction: PanAction? = nil
   private var lastPanGestureLocation: CGPoint?
 
   override init(frame: CGRect) {
@@ -55,7 +56,6 @@ private let PADDING = 10.0
   private func createViews() {
     self.addSubview(imageView)
 
-    imageView.contentMode = .scaleAspectFit
     imageView.snp.makeConstraints { (make) -> Void in
       make.edges
         .equalTo(snp.edges)
@@ -81,25 +81,40 @@ private let PADDING = 10.0
 
     switch (sender.state) {
     case .began:
-      self.croppingOverlayView.onPanGestureStart(on: location)
+      self.panAction = self.croppingOverlayView.onPanGestureStart(on: location)
       self.lastPanGestureLocation = location
     case .ended:
-      let result = self.croppingOverlayView.onPanGestureEnded()
-      self.imageView.refit(
-        scale: result.scale,
-        anchor: result.anchor,
-        fromRect: result.fromRect,
-        toRect: result.toRect
-      )
+      switch (panAction) {
+      case .move:
+        self.imageView.moveWithinBounds(self.croppingOverlayView.cropRect!)
+      case .crop:
+        let result = self.croppingOverlayView.onPanGestureEnded()
+
+        self.imageView.refit(
+          scale: result.scale,
+          anchor: result.anchor,
+          fromRect: result.fromRect,
+          toRect: result.toRect
+        )
+      default: break
+      }
+
       self.lastPanGestureLocation = nil
-    default:
-      let translation = CGPoint(
-        x: location.x - self.lastPanGestureLocation!.x,
-        y: location.y - self.lastPanGestureLocation!.y
+      self.panAction = nil
+    case .changed:
+      let translation = CGVector(
+        dx: location.x - self.lastPanGestureLocation!.x,
+        dy: location.y - self.lastPanGestureLocation!.y
       )
 
       self.croppingOverlayView.onPanGestureMove(translation: translation)
       self.lastPanGestureLocation = location
+
+      switch (panAction) {
+      case .move: self.imageView.move(translation)
+      default: break
+      }
+    default: break
     }
   }
 }

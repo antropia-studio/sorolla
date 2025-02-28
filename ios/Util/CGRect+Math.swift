@@ -32,30 +32,30 @@ extension CGRect {
 
   mutating func move(
     anchor: Anchor,
-    translation: CGPoint,
+    translation: CGVector,
     minSize: CGSize = CGSize(width: 100, height: 100)
   ) {
     switch anchor {
     case .topLeft:
-      moveLeft(dx: translation.x, minWidth: minSize.width)
-      moveTop(dy: translation.y, minHeight: minSize.height)
+      moveLeft(dx: translation.dx, minWidth: minSize.width)
+      moveTop(dy: translation.dy, minHeight: minSize.height)
     case .topRight:
-      moveRight(dx: translation.x, minWidth: minSize.width)
-      moveTop(dy: translation.y, minHeight: minSize.height)
+      moveRight(dx: translation.dx, minWidth: minSize.width)
+      moveTop(dy: translation.dy, minHeight: minSize.height)
     case .bottomLeft:
-      moveLeft(dx: translation.x, minWidth: minSize.width)
-      moveBottom(dy: translation.y, minHeight: minSize.height)
+      moveLeft(dx: translation.dx, minWidth: minSize.width)
+      moveBottom(dy: translation.dy, minHeight: minSize.height)
     case .bottomRight:
-      moveRight(dx: translation.x, minWidth: minSize.width)
-      moveBottom(dy: translation.y, minHeight: minSize.height)
+      moveRight(dx: translation.dx, minWidth: minSize.width)
+      moveBottom(dy: translation.dy, minHeight: minSize.height)
     case .left:
-      moveLeft(dx: translation.x, minWidth: minSize.width)
+      moveLeft(dx: translation.dx, minWidth: minSize.width)
     case .top:
-      moveTop(dy: translation.y, minHeight: minSize.height)
+      moveTop(dy: translation.dy, minHeight: minSize.height)
     case .right:
-      moveRight(dx: translation.x, minWidth: minSize.width)
+      moveRight(dx: translation.dx, minWidth: minSize.width)
     case .bottom:
-      moveBottom(dy: translation.y, minHeight: minSize.height)
+      moveBottom(dy: translation.dy, minHeight: minSize.height)
     }
   }
 
