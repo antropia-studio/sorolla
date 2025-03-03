@@ -21,7 +21,7 @@ export const TransformTools = ({
       style={{
         flex: 1,
         flexDirection: 'row',
-        gap: 24,
+        gap: 16,
         justifyContent: 'center',
       }}
     >

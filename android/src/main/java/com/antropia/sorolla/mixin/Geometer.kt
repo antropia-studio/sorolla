@@ -18,6 +18,8 @@ interface Geometer {
     this.y *= other.y
   }
 
+  val PointF.swapped: PointF get() = PointF(y, x)
+
   fun RectF.getAnchorPoint(anchor: RectAnchor): PointF {
     val centerX = (left + right) / 2f
     val centerY = (top + bottom) / 2f
@@ -91,7 +93,7 @@ interface Geometer {
     }
 
   /**
-   * This rotation assumes the rectangle is centered.
+   * Interchanges vertex positions so that the rectangle changes its orientation (landscape <> portrait)
    */
-  fun RectF.rotateCcw(): RectF = RectF(top, left, bottom, right)
+  fun RectF.swapAxis(): RectF = RectF(top, left, bottom, right)
 }

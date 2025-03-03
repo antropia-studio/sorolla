@@ -26,6 +26,7 @@ import com.facebook.react.uimanager.PixelUtil.dpToPx
 import kotlin.math.abs
 import kotlin.math.min
 
+
 private val CORNER_LENGTH = 25.dpToPx()
 private val CROP_TOUCH_AREA = 48.dpToPx()
 private val MOVE_TOUCH_AREA = 128.dpToPx()
@@ -56,6 +57,7 @@ class CroppingOverlayView : View, Geometer, Interpolator {
   private val cropUpdateHandler = Handler(Looper.getMainLooper())
   private var pendingCropUpdate: Runnable? = null
   private val renderer = Renderer(this)
+  var overlayColor: Int = 0x66000000
   var cropRect: RectF? = null
 
   constructor(context: Context?) : super(context)
@@ -109,7 +111,7 @@ class CroppingOverlayView : View, Geometer, Interpolator {
     val cRect = cropRect ?: return null
     val wRect = workingRect ?: return null
 
-    val targetRect = cRect.rotateCcw().zoomToWorkingRect(wRect)
+    val targetRect = cRect.swapAxis().zoomToWorkingRect(wRect)
     animateCropRect(cRect, targetRect)
 
     return RotateResult(
@@ -264,7 +266,7 @@ class CroppingOverlayView : View, Geometer, Interpolator {
       is AnimationState.Running -> state.rect
     }
 
-    renderer.render(canvas, rect)
+    renderer.render(canvas, rect, overlayColor)
   }
 
   private fun notifyCropChange(anchor: RectAnchor) {

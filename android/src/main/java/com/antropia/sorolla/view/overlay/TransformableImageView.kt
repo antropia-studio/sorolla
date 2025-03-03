@@ -54,7 +54,7 @@ class TransformableImageView : AppCompatImageView, Geometer, ViewRenderer {
    * If any of the points are out of the image (<0 or >width/height) then we move the image
    * accordingly to place it back within the given rectangle.
    */
-  fun moveImageWithinBoundaries(croppingRect: RectF) {
+  fun moveImageWithinBoundaries(cropRect: RectF) {
     val drawableWidth = drawable.intrinsicWidth
     val drawableHeight = drawable.intrinsicHeight
 
@@ -62,29 +62,23 @@ class TransformableImageView : AppCompatImageView, Geometer, ViewRenderer {
     imageMatrix.invert(inverseMatrix)
     val targetMatrix = Matrix(imageMatrix)
 
-    val normalizedCroppingRect = croppingRect.removePadding(this)
-    inverseMatrix.mapRect(normalizedCroppingRect)
+    val transformedCropRect = cropRect.removePadding(this)
+    inverseMatrix.mapRect(transformedCropRect)
 
-    if (normalizedCroppingRect.left < 0) {
-      targetMatrix.postTranslate(imageScale.x * normalizedCroppingRect.left, 0f)
+    if (transformedCropRect.left < 0) {
+      targetMatrix.preTranslate(transformedCropRect.left, 0f)
     }
 
-    if (normalizedCroppingRect.top < 0) {
-      targetMatrix.postTranslate(0f, imageScale.y * normalizedCroppingRect.top)
+    if (transformedCropRect.top < 0) {
+      targetMatrix.preTranslate(0f, transformedCropRect.top)
     }
 
-    if (normalizedCroppingRect.right > drawableWidth) {
-      targetMatrix.postTranslate(
-        imageScale.x * (normalizedCroppingRect.right - drawableWidth),
-        0f
-      )
+    if (transformedCropRect.right > drawableWidth) {
+      targetMatrix.preTranslate(transformedCropRect.right - drawableWidth, 0f)
     }
 
-    if (normalizedCroppingRect.bottom > drawableHeight) {
-      targetMatrix.postTranslate(
-        0f,
-        imageScale.y * (normalizedCroppingRect.bottom - drawableHeight)
-      )
+    if (transformedCropRect.bottom > drawableHeight) {
+      targetMatrix.preTranslate(0f, transformedCropRect.bottom - drawableHeight)
     }
 
     animateImageMatrix(targetMatrix, duration = 200L)
@@ -182,6 +176,7 @@ class TransformableImageView : AppCompatImageView, Geometer, ViewRenderer {
     targetMatrix.postScale(scale, scale, noPaddingRect.centerX(), noPaddingRect.centerY())
     targetMatrix.postRotate(-90f, noPaddingRect.centerX(), noPaddingRect.centerY())
 
+    imageScale *= scale
     animateImageMatrix(targetMatrix)
   }
 
@@ -202,6 +197,7 @@ class TransformableImageView : AppCompatImageView, Geometer, ViewRenderer {
 
   fun restoreTransforms() {
     imageScale = PointF(1f, 1f)
+
     animateImageMatrix(originalImageMatrix, duration = 500L)
   }
 

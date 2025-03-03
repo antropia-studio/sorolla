@@ -75,6 +75,11 @@ class SorollaView : RelativeLayout, Geometer, ViewAnimator {
     imageView.mirror(axis, cropRect)
   }
 
+  override fun setBackgroundColor(color: Int) {
+    super.setBackgroundColor(color)
+    croppingOverlayView.overlayColor = color
+  }
+
   fun cancelTransform() {
     imageView.restoreTransforms()
     croppingOverlayView.restoreOverlay()

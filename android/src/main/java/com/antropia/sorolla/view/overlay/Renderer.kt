@@ -23,8 +23,8 @@ class Renderer(private val view: View) {
     style = Paint.Style.STROKE
   }
 
-  fun render(canvas: Canvas, rect: RectF) {
-    drawBackground(canvas, rect)
+  fun render(canvas: Canvas, rect: RectF, overlayColor: Int) {
+    drawBackground(canvas, rect, overlayColor)
     drawHorizontalLines(canvas, rect)
     drawVerticalLines(canvas, rect)
     drawAnchors(canvas, rect)
@@ -131,10 +131,11 @@ class Renderer(private val view: View) {
 
   private fun drawBackground(
     canvas: Canvas,
-    rect: RectF
+    rect: RectF,
+    overlayColor: Int
   ) {
     paint.style = Paint.Style.FILL
-    paint.color = BG_COLOR
+    paint.color = 0x44FFFFFF and overlayColor // Set alpha to 0x44 with bitwise "and" operator
 
     canvas.drawRect(0f, 0f, view.right.toFloat(), rect.top, paint)
     canvas.drawRect(0f, rect.top, rect.left, rect.bottom, paint)
