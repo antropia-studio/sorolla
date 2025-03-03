@@ -1,170 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-  xmlns:app="http://schemas.android.com/apk/res-auto"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
-  android:background="@color/ash"
   android:orientation="vertical">
 
-  <RelativeLayout
+  <com.antropia.sorolla.view.overlay.TransformableImageView
+    android:id="@+id/image_view"
     android:layout_width="match_parent"
-    android:layout_height="0dp"
-    android:layout_weight="1">
+    android:layout_height="match_parent"
+    android:layout_centerInParent="true"
+    android:contentDescription="@string/editable_image"
+    android:padding="16dp"
+    android:scaleType="matrix"
+    tools:srcCompat="@tools:sample/backgrounds/scenic" />
 
-    <com.antropia.sorolla.view.overlay.TransformableImageView
-      android:id="@+id/image_view"
-      android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      android:layout_centerInParent="true"
-      android:contentDescription="@string/editable_image"
-      android:padding="16dp"
-      android:scaleType="matrix"
-      tools:srcCompat="@tools:sample/backgrounds/scenic" />
-
-    <com.antropia.sorolla.view.overlay.CroppingOverlayView
-      android:id="@+id/cropping_overlay"
-      android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      android:visibility="invisible" />
-
-  </RelativeLayout>
-
-  <LinearLayout
+  <com.antropia.sorolla.view.overlay.CroppingOverlayView
+    android:id="@+id/cropping_overlay"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:gravity="center"
-    android:orientation="vertical">
+    android:layout_height="match_parent"
+    android:visibility="invisible" />
 
-    <Button
-      android:id="@+id/restore_button"
-      android:layout_width="wrap_content"
-      android:layout_height="@dimen/min_pressable"
-      android:background="?attr/selectableItemBackgroundBorderless"
-      android:text="@string/restore"
-      android:textColor="@color/white" />
-
-    <LinearLayout
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:layout_gravity="fill_horizontal"
-      android:orientation="horizontal">
-
-      <ImageButton
-        android:id="@+id/cancel_transform_button"
-        android:layout_width="@dimen/min_pressable"
-        android:layout_height="match_parent"
-        android:layout_weight="2"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:contentDescription="@string/cancel"
-        android:visibility="invisible"
-        app:srcCompat="@drawable/x_circle" />
-
-      <FrameLayout
-        android:layout_width="wrap_content"
-        android:layout_height="@dimen/min_pressable"
-        android:layout_weight="1">
-
-        <LinearLayout
-          android:id="@+id/edition_tools"
-          android:layout_width="wrap_content"
-          android:layout_height="@dimen/min_pressable"
-          android:layout_gravity="center"
-          android:orientation="horizontal">
-
-          <ImageButton
-            android:id="@+id/transform_button"
-            android:layout_width="@dimen/min_pressable"
-            android:layout_height="match_parent"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@string/transform"
-            app:srcCompat="@drawable/crop" />
-
-          <Space
-            android:layout_width="16dp"
-            android:layout_height="match_parent"
-            android:visibility="gone" />
-
-          <ImageButton
-            android:id="@+id/brush_button"
-            android:layout_width="@dimen/min_pressable"
-            android:layout_height="@dimen/min_pressable"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@string/brush"
-            android:visibility="gone"
-            app:srcCompat="@drawable/brush" />
-
-          <Space
-            android:layout_width="16dp"
-            android:layout_height="match_parent"
-            android:visibility="gone" />
-
-          <ImageButton
-            android:id="@+id/settings_button"
-            android:layout_width="@dimen/min_pressable"
-            android:layout_height="@dimen/min_pressable"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@string/settings"
-            android:visibility="gone"
-            app:srcCompat="@drawable/settings" />
-        </LinearLayout>
-
-        <LinearLayout
-          android:id="@+id/transform_tools"
-          android:layout_width="wrap_content"
-          android:layout_height="@dimen/min_pressable"
-          android:layout_gravity="center"
-          android:orientation="horizontal"
-          android:visibility="invisible">
-
-          <ImageButton
-            android:id="@+id/rotate_button"
-            android:layout_width="@dimen/min_pressable"
-            android:layout_height="match_parent"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@string/rotate"
-            app:srcCompat="@drawable/rotate_ccw" />
-
-          <Space
-            android:layout_width="16dp"
-            android:layout_height="match_parent" />
-
-          <ImageButton
-            android:id="@+id/mirror_button"
-            android:layout_width="@dimen/min_pressable"
-            android:layout_height="@dimen/min_pressable"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@string/horizontal_mirror"
-            app:srcCompat="@drawable/horizontal_mirror" />
-
-          <Space
-            android:layout_width="16dp"
-            android:layout_height="match_parent" />
-
-          <ImageButton
-            android:id="@+id/aspect_ratio_button"
-            android:layout_width="@dimen/min_pressable"
-            android:layout_height="@dimen/min_pressable"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@string/aspect_ratio"
-            app:srcCompat="@drawable/aspect_ratio" />
-        </LinearLayout>
-      </FrameLayout>
-
-      <ImageButton
-        android:id="@+id/accept_transform_button"
-        android:layout_width="@dimen/min_pressable"
-        android:layout_height="match_parent"
-        android:layout_weight="2"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:contentDescription="@string/accept"
-        android:visibility="invisible"
-        app:srcCompat="@drawable/check_circle" />
-    </LinearLayout>
-
-  </LinearLayout>
-
-  <Space
-    android:layout_width="match_parent"
-    android:layout_height="@dimen/min_pressable" />
-</LinearLayout>
+</RelativeLayout>

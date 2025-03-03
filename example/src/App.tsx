@@ -30,6 +30,7 @@ export default function App() {
     <SafeAreaView
       style={{
         alignItems: 'center',
+        backgroundColor: '#101010',
         flex: 1,
         justifyContent: 'center',
       }}
@@ -58,6 +59,7 @@ export default function App() {
           }}
         >
           <SorollaView
+            backgroundColor="#101010"
             onEditFinish={({ nativeEvent }) => {
               setEditedImageUri(nativeEvent.uri);
             }}

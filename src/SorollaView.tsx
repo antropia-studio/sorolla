@@ -1,4 +1,4 @@
-import { type Ref, useImperativeHandle, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Dimensions, View } from 'react-native';
 
 import { IconButton } from './component/IconButton';
@@ -13,33 +13,15 @@ import {
 
 export interface SorollaViewProps extends Omit<NativeProps, 'mode'> {}
 
-export type SorollaViewRef = {
-  reset: () => void;
-};
-
-export const SorollaView = (
-  { style, ...props }: SorollaViewProps,
-  ref: Ref<SorollaViewRef>
-) => {
+export const SorollaView = ({ style, ...props }: SorollaViewProps) => {
   const nativeRef = useRef<InstanceType<typeof NativeSorollaView> | null>(null);
   const [mode, setMode] = useState<Mode>('none');
-
-  useImperativeHandle(
-    ref,
-    () => ({
-      reset: () => {
-        if (!nativeRef.current) return;
-
-        Commands.clear(nativeRef.current);
-      },
-    }),
-    []
-  );
 
   return (
     <View
       style={{
         alignItems: 'center',
+        backgroundColor: '#101010',
         flex: 1,
         flexDirection: 'column',
         gap: 16,
@@ -71,7 +53,7 @@ export const SorollaView = (
           <IconButton
             onPress={() => {
               if (nativeRef.current) {
-                Commands.clear(nativeRef.current);
+                Commands.cancelTransform(nativeRef.current);
               }
               setMode('none');
             }}

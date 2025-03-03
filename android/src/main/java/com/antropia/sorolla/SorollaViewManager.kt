@@ -1,6 +1,8 @@
 package com.antropia.sorolla
 
 import android.graphics.Color
+import com.antropia.sorolla.util.Mode
+import com.antropia.sorolla.view.SorollaView
 import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
@@ -29,11 +31,28 @@ class SorollaViewManager : SimpleViewManager<SorollaView>(),
 
   @ReactProp(name = "uri")
   override fun setUri(view: SorollaView?, value: String?) {
-    view?.setBackgroundColor(Color.parseColor("#FF9529"))
+    val rawImageUri = value ?: return
 
-    value?.let {
-      view?.setImage(value)
-    }
+    view?.setImage(rawImageUri)
+  }
+
+  @ReactProp(name = "mode")
+  override fun setMode(view: SorollaView?, value: String?) {
+    val rawMode = value ?: return
+
+    val mode = Mode.valueOf(rawMode.uppercase())
+    view?.setMode(mode)
+  }
+
+  @ReactProp(name = "backgroundColor")
+  override fun setBackgroundColor(view: SorollaView?, value: String?) {
+    val rawBackgroundColor = value ?: return
+
+    view?.setBackgroundColor(Color.parseColor(rawBackgroundColor))
+  }
+
+  override fun cancelTransform(view: SorollaView?) {
+    view?.cancelTransform()
   }
 
   override fun getExportedCustomBubblingEventTypeConstants(): Map<String, Any> {

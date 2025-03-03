@@ -11,14 +11,17 @@ import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNati
 export type Mode = 'none' | 'transform';
 
 export interface NativeCommands {
-  clear: (viewRef: React.ElementRef<HostComponent<NativeProps>>) => void;
+  cancelTransform: (
+    viewRef: React.ElementRef<HostComponent<NativeProps>>
+  ) => void;
 }
 
 export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
-  supportedCommands: ['clear'],
+  supportedCommands: ['cancelTransform'],
 });
 
 export interface NativeProps extends ViewProps {
+  backgroundColor?: string;
   mode?: WithDefault<Mode, 'none'>;
   onEditFinish: BubblingEventHandler<Readonly<EditFinishEvent>>;
   uri: string;
