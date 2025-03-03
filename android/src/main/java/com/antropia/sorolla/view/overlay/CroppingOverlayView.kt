@@ -15,8 +15,8 @@ import android.widget.ImageView
 import androidx.core.animation.doOnEnd
 import androidx.core.view.marginLeft
 import androidx.core.view.marginTop
+import com.antropia.sorolla.mixin.Geometer
 import com.antropia.sorolla.mixin.Interpolator
-import com.antropia.sorolla.mixin.RectHandler
 import com.antropia.sorolla.util.RectAnchor
 import com.antropia.sorolla.util.marginHorizontal
 import com.antropia.sorolla.util.marginVertical
@@ -41,7 +41,9 @@ interface OnCropAreaChangeListener {
   fun onMoveFinish(croppingRect: RectF)
 }
 
-class CroppingOverlayView : View, RectHandler, Interpolator {
+data class RotateResult(val scale: Float, val fromRect: RectF, val toRect: RectF)
+
+class CroppingOverlayView : View, Geometer, Interpolator {
   private var workingRect: RectF? = null
   private var imageRect: RectF? = null
   private var originalRect: RectF? = null
@@ -101,6 +103,20 @@ class CroppingOverlayView : View, RectHandler, Interpolator {
     originalRect = RectF(imageRect)
 
     invalidate()
+  }
+
+  fun rotateCcw(): RotateResult? {
+    val cRect = cropRect ?: return null
+    val wRect = workingRect ?: return null
+
+    val targetRect = cRect.rotateCcw().zoomToWorkingRect(wRect)
+    animateCropRect(cRect, targetRect)
+
+    return RotateResult(
+      scale = targetRect.width() / cRect.height(),
+      fromRect = cRect,
+      toRect = targetRect
+    )
   }
 
   fun restoreOverlay() {

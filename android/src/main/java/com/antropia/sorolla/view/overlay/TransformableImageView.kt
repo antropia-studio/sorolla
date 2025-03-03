@@ -8,15 +8,16 @@ import android.net.Uri
 import android.util.AttributeSet
 import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.appcompat.widget.AppCompatImageView
-import com.antropia.sorolla.mixin.RectHandler
+import com.antropia.sorolla.mixin.Geometer
 import com.antropia.sorolla.mixin.ViewRenderer
+import com.antropia.sorolla.util.Axis
 import com.antropia.sorolla.util.RectAnchor
 import com.antropia.sorolla.util.paddingHorizontal
 import com.antropia.sorolla.util.paddingVertical
 
-class TransformableImageView : AppCompatImageView, RectHandler, ViewRenderer {
+class TransformableImageView : AppCompatImageView, Geometer, ViewRenderer {
   private var originalImageMatrix: Matrix = imageMatrix
-  private var imageScale: Float = 1f
+  private var imageScale: PointF = PointF(1f, 1f)
 
   constructor(context: Context) : super(context)
   constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
@@ -65,16 +66,16 @@ class TransformableImageView : AppCompatImageView, RectHandler, ViewRenderer {
     inverseMatrix.mapRect(normalizedCroppingRect)
 
     if (normalizedCroppingRect.left < 0) {
-      targetMatrix.postTranslate(imageScale * normalizedCroppingRect.left, 0f)
+      targetMatrix.postTranslate(imageScale.x * normalizedCroppingRect.left, 0f)
     }
 
     if (normalizedCroppingRect.top < 0) {
-      targetMatrix.postTranslate(0f, imageScale * normalizedCroppingRect.top)
+      targetMatrix.postTranslate(0f, imageScale.y * normalizedCroppingRect.top)
     }
 
     if (normalizedCroppingRect.right > drawableWidth) {
       targetMatrix.postTranslate(
-        imageScale * (normalizedCroppingRect.right - drawableWidth),
+        imageScale.x * (normalizedCroppingRect.right - drawableWidth),
         0f
       )
     }
@@ -82,7 +83,7 @@ class TransformableImageView : AppCompatImageView, RectHandler, ViewRenderer {
     if (normalizedCroppingRect.bottom > drawableHeight) {
       targetMatrix.postTranslate(
         0f,
-        imageScale * (normalizedCroppingRect.bottom - drawableHeight)
+        imageScale.y * (normalizedCroppingRect.bottom - drawableHeight)
       )
     }
 
@@ -174,8 +175,33 @@ class TransformableImageView : AppCompatImageView, RectHandler, ViewRenderer {
     animateImageMatrix(targetMatrix)
   }
 
+  fun rotateCcw(scale: Float, fromRect: RectF, toRect: RectF) {
+    val targetMatrix = Matrix(imageMatrix)
+    val noPaddingRect = fromRect.removePadding(this)
+
+    targetMatrix.postScale(scale, scale, noPaddingRect.centerX(), noPaddingRect.centerY())
+    targetMatrix.postRotate(-90f, noPaddingRect.centerX(), noPaddingRect.centerY())
+
+    animateImageMatrix(targetMatrix)
+  }
+
+  fun mirror(axis: Axis, cropRect: RectF) {
+    val targetMatrix = Matrix(imageMatrix)
+    val noPaddingRect = cropRect.removePadding(this)
+
+    val scale = when (axis) {
+      Axis.HORIZONTAL -> PointF(-1f, 1f)
+      Axis.VERTICAL -> PointF(1f, -1f)
+    }
+
+    targetMatrix.postScale(scale.x, scale.y, noPaddingRect.centerX(), noPaddingRect.centerY())
+
+    imageMatrix = targetMatrix
+    imageScale *= scale
+  }
+
   fun restoreTransforms() {
-    imageScale = 1f
+    imageScale = PointF(1f, 1f)
     animateImageMatrix(originalImageMatrix, duration = 500L)
   }
 
@@ -204,7 +230,7 @@ class TransformableImageView : AppCompatImageView, RectHandler, ViewRenderer {
 
     originalImageMatrix = matrix
     imageMatrix = matrix
-    imageScale = scale
+    imageScale = PointF(scale, scale)
 
     onFinish()
   }

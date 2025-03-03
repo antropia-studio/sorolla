@@ -14,10 +14,22 @@ export interface NativeCommands {
   cancelTransform: (
     viewRef: React.ElementRef<HostComponent<NativeProps>>
   ) => void;
+  mirrorHorizontally: (
+    viewRef: React.ElementRef<HostComponent<NativeProps>>
+  ) => void;
+  mirrorVertically: (
+    viewRef: React.ElementRef<HostComponent<NativeProps>>
+  ) => void;
+  rotateCcw: (viewRef: React.ElementRef<HostComponent<NativeProps>>) => void;
 }
 
 export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
-  supportedCommands: ['cancelTransform'],
+  supportedCommands: [
+    'cancelTransform',
+    'mirrorHorizontally',
+    'mirrorVertically',
+    'rotateCcw',
+  ],
 });
 
 export interface NativeProps extends ViewProps {

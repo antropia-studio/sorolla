@@ -1,6 +1,6 @@
 import Svg, { Path, type SvgProps } from 'react-native-svg';
 
-export const RotateIcon = (props: SvgProps) => (
+export const RotateCcwIcon = (props: SvgProps) => (
   <Svg fill="none" height={24} width={24} {...props}>
     <Path
       d="M1 4v6h6"

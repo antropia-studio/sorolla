@@ -7,7 +7,17 @@ import com.antropia.sorolla.util.AspectRatio
 import com.antropia.sorolla.util.Axis
 import com.antropia.sorolla.util.RectAnchor
 
-interface RectHandler {
+interface Geometer {
+  operator fun PointF.timesAssign(scale: Float) {
+    this.x *= scale
+    this.y *= scale
+  }
+
+  operator fun PointF.timesAssign(other: PointF) {
+    this.x *= other.x
+    this.y *= other.y
+  }
+
   fun RectF.getAnchorPoint(anchor: RectAnchor): PointF {
     val centerX = (left + right) / 2f
     val centerY = (top + bottom) / 2f
@@ -79,4 +89,9 @@ interface RectHandler {
       right -= view.paddingRight
       bottom -= view.paddingBottom
     }
+
+  /**
+   * This rotation assumes the rectangle is centered.
+   */
+  fun RectF.rotateCcw(): RectF = RectF(top, left, bottom, right)
 }

@@ -9,8 +9,9 @@ import android.view.LayoutInflater
 import android.widget.RelativeLayout
 import com.antropia.sorolla.R
 import com.antropia.sorolla.event.OnEditFinishEvent
-import com.antropia.sorolla.mixin.RectHandler
+import com.antropia.sorolla.mixin.Geometer
 import com.antropia.sorolla.mixin.ViewAnimator
+import com.antropia.sorolla.util.Axis
 import com.antropia.sorolla.util.Mode
 import com.antropia.sorolla.util.RectAnchor
 import com.antropia.sorolla.view.overlay.CroppingOverlayView
@@ -21,7 +22,7 @@ import com.facebook.react.bridge.ReactContext
 import com.facebook.react.uimanager.UIManagerHelper
 
 
-class SorollaView : RelativeLayout, RectHandler, ViewAnimator {
+class SorollaView : RelativeLayout, Geometer, ViewAnimator {
   private val gestureExclusionRect = Rect()
   private val imageView: TransformableImageView
   private val croppingOverlayView: CroppingOverlayView
@@ -59,6 +60,19 @@ class SorollaView : RelativeLayout, RectHandler, ViewAnimator {
   fun setMode(mode: Mode) {
     this.mode = mode
     onModeChange(mode)
+  }
+
+  fun rotateCcw() {
+    val result = croppingOverlayView.rotateCcw()
+    result?.let {
+      imageView.rotateCcw(result.scale, result.fromRect, result.toRect)
+    }
+  }
+
+  fun mirror(axis: Axis) {
+    val cropRect = croppingOverlayView.cropRect ?: return
+
+    imageView.mirror(axis, cropRect)
   }
 
   fun cancelTransform() {

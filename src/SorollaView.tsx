@@ -71,8 +71,21 @@ export const SorollaView = ({ style, ...props }: SorollaViewProps) => {
         ) : (
           <Tools.Transform
             onAspectRatioPress={() => {}}
-            onMirrorPress={() => {}}
-            onRotatePress={() => {}}
+            onMirrorHorizontallyPress={() => {
+              if (nativeRef.current) {
+                Commands.mirrorHorizontally(nativeRef.current);
+              }
+            }}
+            onMirrorVerticallyPress={() => {
+              if (nativeRef.current) {
+                Commands.mirrorVertically(nativeRef.current);
+              }
+            }}
+            onRotateCcwPress={() => {
+              if (nativeRef.current) {
+                Commands.rotateCcw(nativeRef.current);
+              }
+            }}
           />
         )}
 

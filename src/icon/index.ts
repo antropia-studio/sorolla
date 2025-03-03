@@ -1,9 +1,10 @@
 import { AcceptIcon } from './AcceptIcon';
 import { AspectRatioIcon } from './AspectRatioIcon';
 import { CancelIcon } from './CancelIcon';
-import { MirrorIcon } from './MirrorIcon';
+import { MirrorHorizontallyIcon } from './MirrorHorizontallyIcon';
+import { MirrorVerticallyIcon } from './MirrorVerticallyIcon';
 import { PaintIcon } from './PaintIcon';
-import { RotateIcon } from './RotateIcon';
+import { RotateCcwIcon } from './RotateCcwIcon';
 import { SettingsIcon } from './SettingsIcon';
 import { TransformIcon } from './TransformIcon';
 
@@ -11,9 +12,10 @@ export const Icon = {
   Accept: AcceptIcon,
   AspectRatio: AspectRatioIcon,
   Cancel: CancelIcon,
-  Mirror: MirrorIcon,
+  MirrorHorizontally: MirrorHorizontallyIcon,
+  MirrorVertically: MirrorVerticallyIcon,
   Paint: PaintIcon,
-  Rotate: RotateIcon,
+  RotateCcw: RotateCcwIcon,
   Settings: SettingsIcon,
   Transform: TransformIcon,
 };

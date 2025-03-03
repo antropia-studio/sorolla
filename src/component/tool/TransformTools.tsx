@@ -5,14 +5,16 @@ import { IconButton } from '../IconButton';
 
 export interface TransformToolsProps {
   onAspectRatioPress: () => void;
-  onMirrorPress: () => void;
-  onRotatePress: () => void;
+  onMirrorHorizontallyPress: () => void;
+  onMirrorVerticallyPress: () => void;
+  onRotateCcwPress: () => void;
 }
 
 export const TransformTools = ({
   onAspectRatioPress,
-  onMirrorPress,
-  onRotatePress,
+  onMirrorHorizontallyPress,
+  onMirrorVerticallyPress,
+  onRotateCcwPress,
 }: TransformToolsProps) => {
   return (
     <View
@@ -23,12 +25,16 @@ export const TransformTools = ({
         justifyContent: 'center',
       }}
     >
-      <IconButton onPress={onRotatePress}>
-        <Icon.Rotate />
+      <IconButton onPress={onRotateCcwPress}>
+        <Icon.RotateCcw />
       </IconButton>
 
-      <IconButton onPress={onMirrorPress}>
-        <Icon.Mirror />
+      <IconButton onPress={onMirrorHorizontallyPress}>
+        <Icon.MirrorHorizontally />
+      </IconButton>
+
+      <IconButton onPress={onMirrorVerticallyPress}>
+        <Icon.MirrorVertically />
       </IconButton>
 
       <IconButton onPress={onAspectRatioPress}>

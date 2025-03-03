@@ -1,6 +1,7 @@
 package com.antropia.sorolla
 
 import android.graphics.Color
+import com.antropia.sorolla.util.Axis
 import com.antropia.sorolla.util.Mode
 import com.antropia.sorolla.view.SorollaView
 import com.facebook.react.module.annotations.ReactModule
@@ -49,6 +50,18 @@ class SorollaViewManager : SimpleViewManager<SorollaView>(),
     val rawBackgroundColor = value ?: return
 
     view?.setBackgroundColor(Color.parseColor(rawBackgroundColor))
+  }
+
+  override fun mirrorHorizontally(view: SorollaView?) {
+    view?.mirror(Axis.HORIZONTAL)
+  }
+
+  override fun mirrorVertically(view: SorollaView?) {
+    view?.mirror(Axis.VERTICAL)
+  }
+
+  override fun rotateCcw(view: SorollaView?) {
+    view?.rotateCcw()
   }
 
   override fun cancelTransform(view: SorollaView?) {
