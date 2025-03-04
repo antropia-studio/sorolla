@@ -12,6 +12,10 @@ extension CGPoint {
       abs(point.y - y) <= radius
   }
 
+  static func +(lhs: CGPoint, rhs: CGVector) -> CGPoint {
+    return CGPoint(x: lhs.x + rhs.dx, y: lhs.y + rhs.dy)
+  }
+
   static func *(lhs: CGPoint, factor: CGFloat) -> CGPoint {
     return CGPoint(x: lhs.x * factor, y: lhs.y * factor)
   }
@@ -34,5 +38,13 @@ extension CGPoint {
 
   static func /(lhs: CGPoint, rhs: CGVector) -> CGPoint {
     return CGPoint(x: lhs.x / rhs.dx, y: lhs.y / rhs.dy)
+  }
+
+  static func /(lhs: CGPoint, factor: CGFloat) -> CGPoint {
+    return CGPoint(x: lhs.x / factor, y: lhs.y / factor)
+  }
+
+  static func /=(lhs: inout CGPoint, factor: CGFloat) {
+    lhs = lhs / factor
   }
 }

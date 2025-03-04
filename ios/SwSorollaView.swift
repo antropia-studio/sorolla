@@ -80,7 +80,7 @@ private let PADDING = 10.0
 
     guard let result = result else { return }
 
-    imageView.rotate90DegCcw(scale: result.scale, rect: result.fromRect)
+    imageView.rotate90DegCcw(scale: result.scale, rect: result.fromRect, toRect: result.toRect)
   }
 
   @objc public func resetCurrentTransform() {

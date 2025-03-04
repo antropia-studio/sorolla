@@ -47,17 +47,33 @@ class TransformableImageView: UIImageView {
     layoutIfNeeded()
   }
 
-  func rotate90DegCcw(scale: CGFloat, rect: CGRect) {
+  func rotate90DegCcw(scale: CGFloat, rect: CGRect, toRect: CGRect) {
+    /**
+     * The idea here is to calculate the rotation using the center of the image
+     * as the anchor point (because that's what CGAffineTransform does).
+     */
+    let imageCenterToCropCenter = rect.center - contentClippingRect.center
+    let rotatedVector = imageCenterToCropCenter.rotate(degrees: -90) * scale
+    let newCenter = contentClippingRect.center + rotatedVector
+    let translation = (toRect.center - newCenter) / imageScale
+
+    print("scale", scale)
+    print("rect", rect)
+    print("centers", rect.center, toRect.center)
+    print("contentClippingRect", contentClippingRect)
+    print("imageCenterToCropCenter", imageCenterToCropCenter)
+    print("rotatedVector", rotatedVector)
+    print("newCenter", newCenter)
+    print("translation", translation)
+
     UIView.animate(withDuration: 0.5) {
       self.transform = self.transform
-        .translatedBy(x: 0, y: 0)
-        .rotated(by: -CGFloat.pi / 2)
-        .scaledBy(x: scale, y: scale)
-    } completion: { finished in
-    
+        .translatedBy(vector: translation)
+        .rotatedBy(degrees: -90)
+        .scaledBy(factor: scale)
     }
 
-    imageScale *= scale
+    imageScale /= scale
     layoutIfNeeded()
   }
 
@@ -105,7 +121,7 @@ class TransformableImageView: UIImageView {
 
     UIView.animate(withDuration: 0.4) {
       self.transform = self.transform
-        .translatedBy(x: translation.dx, y: translation.dy)
+        .translatedBy(vector: translation)
       self.layoutIfNeeded()
     }
   }
@@ -131,8 +147,8 @@ class TransformableImageView: UIImageView {
 
     UIView.animate(withDuration: 0.5) {
       self.transform = self.transform
-        .scaledBy(x: scale, y: scale)
-        .translatedBy(x: translation.dx, y: translation.dy)
+        .scaledBy(factor: scale)
+        .translatedBy(vector: translation)
       self.layoutIfNeeded()
     }
   }
