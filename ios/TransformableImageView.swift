@@ -47,6 +47,20 @@ class TransformableImageView: UIImageView {
     layoutIfNeeded()
   }
 
+  func rotate90DegCcw(scale: CGFloat, rect: CGRect) {
+    UIView.animate(withDuration: 0.5) {
+      self.transform = self.transform
+        .translatedBy(x: 0, y: 0)
+        .rotated(by: -CGFloat.pi / 2)
+        .scaledBy(x: scale, y: scale)
+    } completion: { finished in
+    
+    }
+
+    imageScale *= scale
+    layoutIfNeeded()
+  }
+
   func reset(animated: Bool = false) {
     if (animated) {
       UIView.animate(withDuration: 0.5) {

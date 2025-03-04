@@ -3,6 +3,12 @@ import UIKit
 
 private let PAN_RADIUS = 40.0
 
+struct Rotate90DegCcwResult {
+  let scale: CGFloat
+  let fromRect: CGRect
+  let toRect: CGRect
+}
+
 struct PanGestureEndResult {
   let scale: CGFloat
   let anchor: Anchor
@@ -56,6 +62,20 @@ struct PanGestureEndResult {
     }
   }
 
+  func rotate90DegCcw() -> Rotate90DegCcwResult? {
+    guard let cropRect = cropRect else { return nil }
+
+    let targetRect = cropRect.swappedAxis.fitting(in: workingRect)
+    let scale = targetRect.width / cropRect.height
+    animateCropRect(from: cropRect, to: targetRect, duration: 0.5)
+
+    return Rotate90DegCcwResult(
+      scale: scale,
+      fromRect: cropRect,
+      toRect: targetRect
+    )
+  }
+
   override public func draw(_ rect: CGRect) {
     guard let cropRect = self.panCropRect ?? self.cropRect else { return }
     guard let context = UIGraphicsGetCurrentContext() else { return }
@@ -98,39 +118,14 @@ struct PanGestureEndResult {
     guard let panAnchor = panAnchor else { return .zero }
     guard let fromRect = panCropRect else { return .zero }
 
-    let workingRect = CGRect(
-      x: frame.minX + self.padding,
-      y: frame.minY + self.padding,
-      width: frame.maxX - self.padding * 2,
-      height: frame.maxY - self.padding * 2
-    )
-    let aspectRatio = fromRect.aspectRatio
-    let leadingAxis = getLeadingAxisForZoom(rect: fromRect)
-
-    let center = frame.center
-
-    let zoomedWidth = workingRect.height * aspectRatio
-    let zoomedHeight = workingRect.width / aspectRatio
-
-    let zoomedLeft = center.x - zoomedWidth / 2
-    let zoomedTop = center.y - zoomedHeight / 2
-
-    var toRect: CGRect
-    switch (leadingAxis) {
-    case .horizontal:
-      toRect = CGRect(x: workingRect.minX, y: zoomedTop, width: workingRect.width, height: zoomedHeight)
-    case .vertical:
-      toRect = CGRect(x: zoomedLeft, y: workingRect.minY, width: zoomedWidth, height: workingRect.height)
-    }
-
-    let scale = min(toRect.width / fromRect.width, toRect.height / fromRect.height)
+    let toRect = fromRect.fitting(in: workingRect)
 
     animateCropRect(from: fromRect, to: toRect, duration: 0.5)
     panCropRect = nil
     self.panAnchor = nil
 
     return PanGestureEndResult(
-      scale: scale,
+      scale: min(toRect.width / fromRect.width, toRect.height / fromRect.height),
       anchor: panAnchor.opposite,
       fromRect: fromRect,
       toRect: toRect
@@ -145,5 +140,14 @@ struct PanGestureEndResult {
     } else {
       return .horizontal
     }
+  }
+
+  private var workingRect: CGRect {
+    return CGRect(
+      x: frame.minX + self.padding,
+      y: frame.minY + self.padding,
+      width: frame.maxX - self.padding * 2,
+      height: frame.maxY - self.padding * 2
+    )
   }
 }

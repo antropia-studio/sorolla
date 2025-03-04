@@ -30,6 +30,43 @@ extension CGRect {
     }
   }
 
+  /**
+   * Interchanges vertex positions so that the rectangle changes its orientation (landscape <> portrait)
+   */
+  var swappedAxis: CGRect { return CGRect(x: minX, y: minY, width: height, height: width) }
+
+  func fitting(in workingRect: CGRect) -> CGRect {
+    let leadingAxis = getLeadingAxisToFit(in: workingRect)
+
+    let center = workingRect.center
+
+    let zoomedWidth = workingRect.height * aspectRatio
+    let zoomedHeight = workingRect.width / aspectRatio
+
+    let zoomedLeft = center.x - zoomedWidth / 2
+    let zoomedTop = center.y - zoomedHeight / 2
+
+    var toRect: CGRect
+    switch (leadingAxis) {
+    case .horizontal:
+      toRect = CGRect(x: workingRect.minX, y: zoomedTop, width: workingRect.width, height: zoomedHeight)
+    case .vertical:
+      toRect = CGRect(x: zoomedLeft, y: workingRect.minY, width: zoomedWidth, height: workingRect.height)
+    }
+
+    return toRect
+  }
+
+  private func getLeadingAxisToFit(in rect: CGRect) -> Axis {
+    let horizontalZoomRatio = width / rect.width
+
+    if rect.height * horizontalZoomRatio < height {
+      return .vertical
+    } else {
+      return .horizontal
+    }
+  }
+
   mutating func move(
     anchor: Anchor,
     translation: CGVector,

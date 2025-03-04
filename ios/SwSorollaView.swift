@@ -76,7 +76,11 @@ private let PADDING = 10.0
   }
 
   @objc public func rotateCcw() {
-    
+    let result = croppingOverlayView.rotate90DegCcw()
+
+    guard let result = result else { return }
+
+    imageView.rotate90DegCcw(scale: result.scale, rect: result.fromRect)
   }
 
   @objc public func resetCurrentTransform() {
