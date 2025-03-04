@@ -59,6 +59,26 @@ private let PADDING = 10.0
     }
   }
 
+  @objc public func setBackgroundAndOverlayColor(_ color: UIColor) {
+    
+  }
+
+  @objc public func mirrorHorizontally() {
+    guard let cropRect = croppingOverlayView.cropRect else { return }
+
+    imageView.mirror(on: .horizontal, rect: cropRect)
+  }
+
+  @objc public func mirrorVertically() {
+    guard let cropRect = croppingOverlayView.cropRect else { return }
+
+    imageView.mirror(on: .vertical, rect: cropRect)
+  }
+
+  @objc public func rotateCcw() {
+    
+  }
+
   @objc public func resetCurrentTransform() {
     self.imageView.reset(animated: true)
     self.croppingOverlayView.setImageRect(rect: self.imageView.contentClippingRect, update: false)

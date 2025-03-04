@@ -2,7 +2,7 @@ import UIKit
 import AVKit
 
 class TransformableImageView: UIImageView {
-  private var imageScale: CGFloat = 1.0
+  private var imageScale: CGPoint = CGPoint(x: 1.0, y: 1.0)
 
   convenience init() {
     self.init(frame: CGRect.zero)
@@ -18,6 +18,35 @@ class TransformableImageView: UIImageView {
     super.init(coder: aDecoder)
   }
 
+  func mirror(on axis: Axis, rect: CGRect) {
+    /**
+     * Because all transforms are applied based on the center of the image we need to correct the
+     * translation to move the anchor to the center of the working/crop rect.
+     * To do that we calculate the distance between the centers of the crop rect and the inner image.
+     * We know we have to move the image double that (to virtually move the crop rect to the other side
+     * of the reflection).
+     */
+    let imageCenterToCropCenter = rect.center - contentClippingRect.center
+    let translation = (imageCenterToCropCenter * 2) / imageScale
+
+    switch (axis) {
+    case .horizontal:
+      self.transform = self.transform
+        .translatedBy(x: translation.dx, y: 0)
+        .scaledBy(x: -1, y: 1)
+
+      self.imageScale *= CGPoint(x: -1, y: 1)
+    case .vertical:
+      self.transform = self.transform
+        .translatedBy(x: 0, y: translation.dy)
+        .scaledBy(x: 1, y: -1)
+
+      self.imageScale *= CGPoint(x: 1, y: -1)
+    }
+
+    layoutIfNeeded()
+  }
+
   func reset(animated: Bool = false) {
     if (animated) {
       UIView.animate(withDuration: 0.5) {
@@ -27,7 +56,7 @@ class TransformableImageView: UIImageView {
       self.transform = CGAffineTransform.identity
     }
 
-    self.imageScale = 1.0
+    self.imageScale = CGPoint(x: 1.0, y: 1.0)
   }
 
   func move(_ translation: CGVector) {
