@@ -1,6 +1,8 @@
 import Foundation
 
 extension CGVector {
+  static var one: CGVector { return CGVector(dx: 1, dy: 1) }
+
   static func *(lhs: CGVector, factor: CGFloat) -> CGVector {
     return CGVector(dx: lhs.dx * factor, dy: lhs.dy * factor)
   }

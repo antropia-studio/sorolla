@@ -33,6 +33,12 @@ private let PADDING = 10.0
           self.imageView.image = image
           self.imageView.reset()
           self.croppingOverlayView.setImageRect(rect: self.imageView.contentClippingRect)
+
+          self.setMode("transform")
+
+//          DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 1) {
+//            self.rotateCcw()
+//          }
         }
       }
     }
@@ -120,10 +126,27 @@ private let PADDING = 10.0
     case .began:
       self.panAction = self.croppingOverlayView.onPanGestureStart(on: location)
       self.lastPanGestureLocation = location
+
+    case .changed:
+      let translation = CGVector(
+        dx: location.x - self.lastPanGestureLocation!.x,
+        dy: location.y - self.lastPanGestureLocation!.y
+      )
+
+      self.croppingOverlayView.onPanGestureMove(translation: translation)
+      self.lastPanGestureLocation = location
+
+      switch (panAction) {
+      case .move: self.imageView.move(translation)
+
+      default: break
+      }
+
     case .ended:
       switch (panAction) {
       case .move:
         self.imageView.moveWithinBounds(self.croppingOverlayView.cropRect!)
+
       case .crop:
         let result = self.croppingOverlayView.onPanGestureEnded()
 
@@ -138,19 +161,6 @@ private let PADDING = 10.0
 
       self.lastPanGestureLocation = nil
       self.panAction = nil
-    case .changed:
-      let translation = CGVector(
-        dx: location.x - self.lastPanGestureLocation!.x,
-        dy: location.y - self.lastPanGestureLocation!.y
-      )
-
-      self.croppingOverlayView.onPanGestureMove(translation: translation)
-      self.lastPanGestureLocation = location
-
-      switch (panAction) {
-      case .move: self.imageView.move(translation)
-      default: break
-      }
     default: break
     }
   }

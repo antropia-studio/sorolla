@@ -2,8 +2,9 @@ import UIKit
 import AVKit
 
 class TransformableImageView: UIImageView {
+  private var translation: CGPoint = .zero
   private var rotationInDegrees: CGFloat = 0
-  private var imageScale: CGVector = CGVector(dx: 1, dy: 1)
+  private var imageScale: CGVector = .one
 
   convenience init() {
     self.init(frame: CGRect.zero)
@@ -56,32 +57,19 @@ class TransformableImageView: UIImageView {
      * transforms required to run the rotation (rotation + scaling) and then calculate
      * the vector from that calculated point back to the center of the rect.
      */
-    let imageCenterToCropCenter = (rect.center - contentClippingRect.center).rotate(degrees: -rotationInDegrees)
-    let rotatedVector = imageCenterToCropCenter.rotate(degrees: -90) * scale
-    let newCenter = contentClippingRect.center + rotatedVector
+    let toRectCenterVector = rect.center - contentClippingRect.center
+    let newCenterVector = toRectCenterVector.rotate(degrees: -90) * scale
+    let newCenter = contentClippingRect.center + newCenterVector
     let translation = (rect.center - newCenter) / imageScale
-
-    print("ROTATION")
-    print("==================")
-    print("scale", scale)
-    print("imageScale", imageScale)
-    print("rotation", rotationInDegrees)
-    print("rect", rect)
-    print("centers", rect.center, contentClippingRect.center)
-    print("contentClippingRect", contentClippingRect)
-    print("imageCenterToCropCenter", imageCenterToCropCenter)
-    print("rotatedVector", rotatedVector)
-    print("newCenter", newCenter)
-    print("translation", translation)
 
     UIView.animate(withDuration: 0.5) {
       self.transform = self.transform
-        .translatedBy(vector: translation)
+        .translatedBy(vector: translation.rotate(degrees: -self.rotationInDegrees))
         .rotatedBy(degrees: -90)
         .scaledBy(factor: scale)
     }
 
-    imageScale /= scale
+    imageScale *= scale
     rotationInDegrees -= 90
     layoutIfNeeded()
   }
@@ -102,7 +90,9 @@ class TransformableImageView: UIImageView {
   func move(_ translation: CGVector) {
     let distance = translation / imageScale
 
-    self.transform = self.transform.translatedBy(x: distance.dx, y: distance.dy)
+    self.transform = self.transform
+      .translatedBy(vector: distance.rotate(degrees: -rotationInDegrees))
+
     layoutIfNeeded()
   }
 
