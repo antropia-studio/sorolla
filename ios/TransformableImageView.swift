@@ -2,7 +2,8 @@ import UIKit
 import AVKit
 
 class TransformableImageView: UIImageView {
-  private var imageScale: CGPoint = CGPoint(x: 1.0, y: 1.0)
+  private var rotationInDegrees: CGFloat = 0
+  private var imageScale: CGVector = CGVector(dx: 1, dy: 1)
 
   convenience init() {
     self.init(frame: CGRect.zero)
@@ -35,13 +36,13 @@ class TransformableImageView: UIImageView {
         .translatedBy(x: translation.dx, y: 0)
         .scaledBy(x: -1, y: 1)
 
-      self.imageScale *= CGPoint(x: -1, y: 1)
+      self.imageScale *= CGVector(dx: -1, dy: 1)
     case .vertical:
       self.transform = self.transform
         .translatedBy(x: 0, y: translation.dy)
         .scaledBy(x: 1, y: -1)
 
-      self.imageScale *= CGPoint(x: 1, y: -1)
+      self.imageScale *= CGVector(dx: 1, dy: -1)
     }
 
     layoutIfNeeded()
@@ -51,15 +52,22 @@ class TransformableImageView: UIImageView {
     /**
      * The idea here is to calculate the rotation using the center of the image
      * as the anchor point (because that's what CGAffineTransform does).
+     * For that we calculate the vector to the center of the rect, we then apply the
+     * transforms required to run the rotation (rotation + scaling) and then calculate
+     * the vector from that calculated point back to the center of the rect.
      */
-    let imageCenterToCropCenter = rect.center - contentClippingRect.center
+    let imageCenterToCropCenter = (rect.center - contentClippingRect.center).rotate(degrees: -rotationInDegrees)
     let rotatedVector = imageCenterToCropCenter.rotate(degrees: -90) * scale
     let newCenter = contentClippingRect.center + rotatedVector
-    let translation = (toRect.center - newCenter) / imageScale
+    let translation = (rect.center - newCenter) / imageScale
 
+    print("ROTATION")
+    print("==================")
     print("scale", scale)
+    print("imageScale", imageScale)
+    print("rotation", rotationInDegrees)
     print("rect", rect)
-    print("centers", rect.center, toRect.center)
+    print("centers", rect.center, contentClippingRect.center)
     print("contentClippingRect", contentClippingRect)
     print("imageCenterToCropCenter", imageCenterToCropCenter)
     print("rotatedVector", rotatedVector)
@@ -74,6 +82,7 @@ class TransformableImageView: UIImageView {
     }
 
     imageScale /= scale
+    rotationInDegrees -= 90
     layoutIfNeeded()
   }
 
@@ -86,7 +95,8 @@ class TransformableImageView: UIImageView {
       self.transform = CGAffineTransform.identity
     }
 
-    self.imageScale = CGPoint(x: 1.0, y: 1.0)
+    self.imageScale = CGVector(dx: 1.0, dy: 1.0)
+    rotationInDegrees = 0
   }
 
   func move(_ translation: CGVector) {
@@ -156,6 +166,6 @@ class TransformableImageView: UIImageView {
   var contentClippingRect: CGRect {
     guard let image = image else { return bounds }
 
-    return AVMakeRect(aspectRatio: image.size, insideRect: frame);
+    return AVMakeRect(aspectRatio: image.size.rotated90Degrees(times: Int(rotationInDegrees / 90)), insideRect: frame);
   }
 }
