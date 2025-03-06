@@ -35,6 +35,15 @@ extension CGRect {
    */
   var swappedAxis: CGRect { return CGRect(x: minX, y: minY, width: height, height: width) }
 
+  func isWithin(_ rect: CGRect) -> Bool {
+    if minX < rect.minX { return false }
+    if minY < rect.minY { return false }
+    if maxX > rect.maxX { return false }
+    if maxY > rect.maxY { return false }
+
+    return true
+  }
+
   func fitting(in workingRect: CGRect) -> CGRect {
     let leadingAxis = getLeadingAxisToFit(in: workingRect)
 
@@ -57,6 +66,35 @@ extension CGRect {
     return toRect
   }
 
+  func moved(
+    anchor: Anchor,
+    translation: CGVector,
+    minSize: CGSize = CGSize(width: 100, height: 100)
+  ) -> CGRect {
+    switch anchor {
+    case .topLeft:
+      return movedLeft(dx: translation.dx, minWidth: minSize.width)
+        .movedTop(dy: translation.dy, minHeight: minSize.height)
+    case .topRight:
+      return movedRight(dx: translation.dx, minWidth: minSize.width)
+        .movedTop(dy: translation.dy, minHeight: minSize.height)
+    case .bottomLeft:
+      return movedLeft(dx: translation.dx, minWidth: minSize.width)
+        .movedBottom(dy: translation.dy, minHeight: minSize.height)
+    case .bottomRight:
+      return movedRight(dx: translation.dx, minWidth: minSize.width)
+        .movedBottom(dy: translation.dy, minHeight: minSize.height)
+    case .left:
+      return movedLeft(dx: translation.dx, minWidth: minSize.width)
+    case .top:
+      return movedTop(dy: translation.dy, minHeight: minSize.height)
+    case .right:
+      return movedRight(dx: translation.dx, minWidth: minSize.width)
+    case .bottom:
+      return movedBottom(dy: translation.dy, minHeight: minSize.height)
+    }
+  }
+
   private func getLeadingAxisToFit(in rect: CGRect) -> Axis {
     let horizontalZoomRatio = width / rect.width
 
@@ -67,59 +105,28 @@ extension CGRect {
     }
   }
 
-  mutating func move(
-    anchor: Anchor,
-    translation: CGVector,
-    minSize: CGSize = CGSize(width: 100, height: 100)
-  ) {
-    switch anchor {
-    case .topLeft:
-      moveLeft(dx: translation.dx, minWidth: minSize.width)
-      moveTop(dy: translation.dy, minHeight: minSize.height)
-    case .topRight:
-      moveRight(dx: translation.dx, minWidth: minSize.width)
-      moveTop(dy: translation.dy, minHeight: minSize.height)
-    case .bottomLeft:
-      moveLeft(dx: translation.dx, minWidth: minSize.width)
-      moveBottom(dy: translation.dy, minHeight: minSize.height)
-    case .bottomRight:
-      moveRight(dx: translation.dx, minWidth: minSize.width)
-      moveBottom(dy: translation.dy, minHeight: minSize.height)
-    case .left:
-      moveLeft(dx: translation.dx, minWidth: minSize.width)
-    case .top:
-      moveTop(dy: translation.dy, minHeight: minSize.height)
-    case .right:
-      moveRight(dx: translation.dx, minWidth: minSize.width)
-    case .bottom:
-      moveBottom(dy: translation.dy, minHeight: minSize.height)
-    }
+  private func movedLeft(dx: CGFloat, minWidth: CGFloat) -> CGRect {
+    guard size.width - dx > minWidth else { return self }
+
+    return CGRect(x: minX + dx, y: minY, width: width - dx, height: height)
   }
 
-  private mutating func moveLeft(dx: CGFloat, minWidth: CGFloat) {
-    guard size.width - dx > minWidth else { return }
+  private func movedTop(dy: CGFloat, minHeight: CGFloat) -> CGRect {
+    guard size.height - dy > minHeight else { return self }
 
-    origin.x += dx
-    size.width -= dx
+    return CGRect(x: minX, y: minY + dy, width: width, height: height - dy)
   }
 
-  private mutating func moveTop(dy: CGFloat, minHeight: CGFloat) {
-    guard size.height - dy > minHeight else { return }
+  private func movedRight(dx: CGFloat, minWidth: CGFloat) -> CGRect {
+    guard size.width + dx > minWidth else { return self }
 
-    origin.y += dy
-    size.height -= dy
+    return CGRect(x: minX, y: minY, width: width + dx, height: height)
   }
 
-  private mutating func moveRight(dx: CGFloat, minWidth: CGFloat) {
-    guard size.width + dx > minWidth else { return }
+  private func movedBottom(dy: CGFloat, minHeight: CGFloat) -> CGRect {
+    guard size.height + dy > minHeight else { return self }
 
-    size.width += dx
-  }
-
-  private mutating func moveBottom(dy: CGFloat, minHeight: CGFloat) {
-    guard size.height + dy > minHeight else { return }
-
-    size.height += dy
+    return CGRect(x: minX, y: minY, width: width, height: height + dy)
   }
 
 }

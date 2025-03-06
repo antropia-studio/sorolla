@@ -102,12 +102,18 @@ struct PanGestureEndResult {
     }
   }
 
-  func onPanGestureMove(translation: CGVector) {
-    guard let panAnchor = panAnchor else { return }
+  func onPanGestureMove(translation: CGVector, withinRect imageRect: CGRect) -> Bool {
+    guard let panAnchor = panAnchor else { return true }
 
-    panCropRect?.move(anchor: panAnchor, translation: translation)
+    let movedRect = panCropRect?.moved(anchor: panAnchor, translation: translation) ?? .zero
 
-    setNeedsDisplay()
+    if movedRect.isWithin(imageRect) {
+      self.panCropRect = movedRect
+      setNeedsDisplay()
+      return true
+    } else {
+      return false
+    }
   }
 
   func onPanGestureEnded() -> PanGestureEndResult {

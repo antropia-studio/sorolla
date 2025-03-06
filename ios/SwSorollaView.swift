@@ -133,13 +133,18 @@ private let PADDING = 10.0
         dy: location.y - self.lastPanGestureLocation!.y
       )
 
-      self.croppingOverlayView.onPanGestureMove(translation: translation)
+      let canMove = self.croppingOverlayView.onPanGestureMove(
+        translation: translation,
+        withinRect: self.imageView.contentClippingRect
+      )
       self.lastPanGestureLocation = location
 
-      switch (panAction) {
-      case .move: self.imageView.move(translation)
+      if canMove {
+        switch (panAction) {
+        case .move: self.imageView.move(translation)
 
-      default: break
+        default: break
+        }
       }
 
     case .ended:
