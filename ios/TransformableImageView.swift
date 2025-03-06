@@ -37,13 +37,33 @@ class TransformableImageView: UIImageView {
      * We know we have to move the image double that (to virtually move the crop rect to the other side
      * of the reflection).
      */
-    let normalizedAxis = axis.rotated90Degrees(times: Int(rotationInDegrees / 90))
+    let timesRotated = Int(rotationInDegrees / 90)
+    let normalizedAxis = axis.rotated90Degrees(times: timesRotated)
     let scale = CGVector.mirrorVector(for: normalizedAxis)
     let toRectCenterVector = rect.center - contentClippingRect.center
     let translationInAxis = (toRectCenterVector * 2)
-      .rotate(degrees: -self.rotationInDegrees * scale.sign)
+      .rotate(degrees: -self.rotationInDegrees * imageScale.sign)
       .projected(to: normalizedAxis)
     let translation = translationInAxis / imageScale
+
+    print("MIRROR")
+    print("=========================")
+    print("scale", scale)
+    print("self.rotationInDegrees", rotationInDegrees)
+    print("imageScale", imageScale)
+    print("axis", axis)
+    print("normalizedAxis", normalizedAxis)
+    print("rect", rect)
+    print("rect.center", rect.center)
+    print("contentClippingRect", contentClippingRect)
+    print("contentClippingRect.center", contentClippingRect.center)
+    print("t1", (toRectCenterVector * 2))
+    print("t2", (toRectCenterVector * 2)
+      .rotate(degrees: -self.rotationInDegrees * scale.sign))
+    print("t3", (toRectCenterVector * 2)
+      .rotate(degrees: -self.rotationInDegrees * scale.sign)
+      .projected(to: normalizedAxis))
+    print("translation", translation)
 
     self.transform = self.transform
       .translatedBy(vector: translation)
@@ -69,6 +89,20 @@ class TransformableImageView: UIImageView {
     let newCenterVector = toRectCenterVector.rotate(degrees: -90) * scale
     let newCenter = contentClippingRect.center + newCenterVector
     let translation = (rect.center - newCenter) / imageScale
+
+    print("ROTATE")
+    print("=========================")
+    print("scale", scale)
+    print("self.rotationInDegrees", rotationInDegrees)
+    print("imageScale", imageScale)
+    print("rotation", rotation)
+    print("rect", rect)
+    print("rect.center", rect.center)
+    print("contentClippingRect", contentClippingRect)
+    print("contentClippingRect.center", contentClippingRect.center)
+    print("newCenterVector", newCenterVector)
+    print("newCenter", newCenter)
+    print("translation", translation)
 
     UIView.animate(withDuration: 0.5) {
       self.transform = self.transform
