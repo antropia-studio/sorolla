@@ -121,7 +121,8 @@ class TransformableImageView: UIImageView {
 
     UIView.animate(withDuration: 0.4) {
       self.transform = self.transform
-        .translatedBy(vector: translation)
+        .translatedBy(vector: translation.rotate(degrees: -self.rotationInDegrees))
+
       self.layoutIfNeeded()
     }
   }
