@@ -38,12 +38,12 @@ class TransformableImageView: UIImageView {
      * of the reflection).
      */
     let normalizedAxis = axis.rotated90Degrees(times: Int(rotationInDegrees / 90))
-    let toRectCenterVector = rect.center - contentClippingRect.center
-    let translationInAxis = toRectCenterVector
-      .rotate(degrees: -self.rotationInDegrees)
-      .projected(to: normalizedAxis) * 2
-    let translation = translationInAxis / imageScale
     let scale = CGVector.mirrorVector(for: normalizedAxis)
+    let toRectCenterVector = rect.center - contentClippingRect.center
+    let translationInAxis = (toRectCenterVector * 2)
+      .rotate(degrees: -self.rotationInDegrees * scale.sign)
+      .projected(to: normalizedAxis)
+    let translation = translationInAxis / imageScale
 
     self.transform = self.transform
       .translatedBy(vector: translation)
