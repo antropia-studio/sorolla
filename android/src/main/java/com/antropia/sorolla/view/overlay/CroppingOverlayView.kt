@@ -42,7 +42,7 @@ interface OnCropAreaChangeListener {
   fun onMoveFinish(croppingRect: RectF)
 }
 
-data class RotateResult(val scale: Float, val fromRect: RectF, val toRect: RectF)
+data class RotateResult(val scale: Float, val fromRect: RectF)
 
 class CroppingOverlayView : View, Geometer, Interpolator {
   private var workingRect: RectF? = null
@@ -116,8 +116,7 @@ class CroppingOverlayView : View, Geometer, Interpolator {
 
     return RotateResult(
       scale = targetRect.width() / cRect.height(),
-      fromRect = cRect,
-      toRect = targetRect
+      fromRect = cRect
     )
   }
 

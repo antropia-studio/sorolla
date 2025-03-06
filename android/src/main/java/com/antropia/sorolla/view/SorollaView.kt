@@ -65,7 +65,7 @@ class SorollaView : RelativeLayout, Geometer, ViewAnimator {
   fun rotateCcw() {
     val result = croppingOverlayView.rotateCcw()
     result?.let {
-      imageView.rotateCcw(result.scale, result.fromRect, result.toRect)
+      imageView.rotateCcw(result.scale, result.fromRect)
     }
   }
 

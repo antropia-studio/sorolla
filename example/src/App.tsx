@@ -11,7 +11,9 @@ import {
 import { launchImageLibrary } from 'react-native-image-picker';
 
 export default function App() {
-  const [imageUri, setImageUri] = useState<string | undefined>();
+  const [imageUri, setImageUri] = useState<string | undefined>(
+    'https://images.unsplash.com/photo-1740946121655-b2370d0e1bbe?q=100' // For debugging
+  );
   const [editedImageUri, setEditedImageUri] = useState<string | undefined>();
 
   const pickImage = useCallback(async () => {

@@ -169,7 +169,7 @@ class TransformableImageView : AppCompatImageView, Geometer, ViewRenderer {
     animateImageMatrix(targetMatrix)
   }
 
-  fun rotateCcw(scale: Float, fromRect: RectF, toRect: RectF) {
+  fun rotateCcw(scale: Float, fromRect: RectF) {
     val targetMatrix = Matrix(imageMatrix)
     val noPaddingRect = fromRect.removePadding(this)
 

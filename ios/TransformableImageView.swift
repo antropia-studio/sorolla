@@ -1,8 +1,23 @@
 import UIKit
 import AVKit
 
+
+/**
+ * This component allows consumers to apply transformations to the contained image.
+ * Internally it uses CGAffineTransforms which is CoreGraphics implementation of popular
+ * affine matrices.
+ * In Core Graphics, all affine transforms are applied using the center of the image
+ * as their anchor/pivot. That's why all the transforms inside this component take this
+ * into account and all they do is to calculate vectors and distances to the center of the
+ * image.
+ * We keep the transforms applied in the form of translations, rotations and scales because
+ * it's way simpler to operate on the identity matrix over and over again than compounding
+ * matrices.
+ */
 class TransformableImageView: UIImageView {
-  private var imageScale: CGFloat = 1.0
+  private var translation: CGVector = .zero
+  private var rotationInDegrees: CGFloat = 0
+  private var imageScale: CGVector = .one
 
   convenience init() {
     self.init(frame: CGRect.zero)
@@ -18,53 +33,65 @@ class TransformableImageView: UIImageView {
     super.init(coder: aDecoder)
   }
 
-  func reset(animated: Bool = false) {
-    if (animated) {
-      UIView.animate(withDuration: 0.5) {
-        self.transform = CGAffineTransform.identity
-      }
-    } else {
-      self.transform = CGAffineTransform.identity
-    }
+  func mirror(on axis: Axis, rect: CGRect) {
+    let toRectCenterVector = rect.center - contentClippingRect.center
+    let translationInAxis = toRectCenterVector.projected(to: axis) * 2
 
-    self.imageScale = 1.0
+    self.translation += translationInAxis
+    self.imageScale *= CGVector.mirrorVector(for: axis)
+
+    applyTransform(animated: false)
+  }
+
+  func rotate90DegCcw(scale: CGFloat, rect: CGRect, toRect: CGRect) {
+    let rotation: CGFloat = -90
+    let toRectCenterVector = rect.center - contentClippingRect.center
+    let newCenterVector = toRectCenterVector.rotate(degrees: rotation) * scale
+    let newCenter = contentClippingRect.center + newCenterVector
+
+    self.translation += rect.center - newCenter
+    self.imageScale *= scale
+    self.rotationInDegrees += rotation * imageScale.sign
+
+    applyTransform(animated: true)
+  }
+
+  func reset(animated: Bool = false) {
+    self.translation = .zero
+    self.imageScale = CGVector(dx: 1.0, dy: 1.0)
+    self.rotationInDegrees = 0
+
+    applyTransform(animated: animated)
   }
 
   func move(_ translation: CGVector) {
-    let distance = translation / imageScale
+    self.translation += translation
 
-    self.transform = self.transform.translatedBy(x: distance.dx, y: distance.dy)
-    layoutIfNeeded()
+    applyTransform(animated: false)
   }
 
   func moveWithinBounds(_ bounds: CGRect) {
     var translation = CGVector.zero
 
-    let imageFrame = contentClippingRect
-
-    if imageFrame.minX > bounds.minX {
-      translation.dx = bounds.minX - imageFrame.minX
+    if contentClippingRect.minX > bounds.minX {
+      translation.dx = bounds.minX - contentClippingRect.minX
     }
 
-    if imageFrame.maxX < bounds.maxX {
-      translation.dx = bounds.maxX - imageFrame.maxX
+    if contentClippingRect.maxX < bounds.maxX {
+      translation.dx = bounds.maxX - contentClippingRect.maxX
     }
 
-    if imageFrame.minY > bounds.minY {
-      translation.dy = bounds.minY - imageFrame.minY
+    if contentClippingRect.minY > bounds.minY {
+      translation.dy = bounds.minY - contentClippingRect.minY
     }
 
-    if imageFrame.maxY < bounds.maxY {
-      translation.dy = bounds.maxY - imageFrame.maxY
+    if contentClippingRect.maxY < bounds.maxY {
+      translation.dy = bounds.maxY - contentClippingRect.maxY
     }
 
-    translation = translation / imageScale
+    self.translation += translation
 
-    UIView.animate(withDuration: 0.4) {
-      self.transform = self.transform
-        .translatedBy(x: translation.dx, y: translation.dy)
-      self.layoutIfNeeded()
-    }
+    applyTransform(animated: true)
   }
 
   func refit(
@@ -73,30 +100,30 @@ class TransformableImageView: UIImageView {
     fromRect: CGRect,
     toRect: CGRect
   ) {
+    let fromVector = fromRect.center - contentClippingRect.center
+    let toVector = toRect.center - contentClippingRect.center
+
+    self.translation += toVector - (fromVector * scale)
     self.imageScale *= scale
 
-    /**
-     * We create a vector system using the center of the view as the origin of all transformations.
-     * This is like this, because CGAffineTransforms scales images from the center of the view,
-     * and so it's much easier to calculate everything around this fixed point.
-     */
-    let center = frame.center
-    let fromVector = fromRect.getAnchorPoint(anchor) - center
-    let toVector = toRect.getAnchorPoint(anchor) - center
-    let referencePoint = fromVector * scale
-    let translation = (toVector - referencePoint) / imageScale
-
-    UIView.animate(withDuration: 0.5) {
-      self.transform = self.transform
-        .scaledBy(x: scale, y: scale)
-        .translatedBy(x: translation.dx, y: translation.dy)
-      self.layoutIfNeeded()
-    }
+    applyTransform(animated: true)
   }
 
   var contentClippingRect: CGRect {
     guard let image = image else { return bounds }
 
-    return AVMakeRect(aspectRatio: image.size, insideRect: frame);
+    return AVMakeRect(aspectRatio: image.size.rotated90Degrees(times: Int(rotationInDegrees / 90)), insideRect: frame);
+  }
+
+  private func applyTransform(animated: Bool) {
+    UIView.animate(withDuration: animated ? 0.5 : 0) {
+      // Reminder: Operations are applied from bottom to top
+      self.transform = .identity
+        .translatedBy(vector: self.translation)
+        .scaledBy(vector: self.imageScale)
+        .rotatedBy(degrees: self.rotationInDegrees)
+
+      self.setNeedsLayout()
+    }
   }
 }

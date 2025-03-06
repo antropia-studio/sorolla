@@ -3,6 +3,12 @@ import UIKit
 
 private let PAN_RADIUS = 40.0
 
+struct Rotate90DegCcwResult {
+  let scale: CGFloat
+  let fromRect: CGRect
+  let toRect: CGRect
+}
+
 struct PanGestureEndResult {
   let scale: CGFloat
   let anchor: Anchor
@@ -14,21 +20,14 @@ struct PanGestureEndResult {
   }
 }
 
-@objc public class CroppingOverlayView: UIView {
+@objc public class CroppingOverlayView: UIView, CroppingOverlayViewAnimatorDelegate {
   private lazy var imageView = UIImageView()
   private var imageRect: CGRect?
   var cropRect: CGRect?
   private var panCropRect: CGRect?
   private var panAnchor: Anchor?
   private var padding: CGFloat = 0.0
-
-  // animation
-  var displayLink: CADisplayLink?
-  var animationStartRect: CGRect?
-  var animationTargetRect: CGRect?
-  var animationProgress: CGFloat = 0
-  var animationStart: CFTimeInterval?
-  var animationDuration: TimeInterval?
+  private var animator = CroppingOverlayViewAnimator()
 
   convenience init(padding: CGFloat) {
     self.init(frame: .zero)
@@ -56,6 +55,21 @@ struct PanGestureEndResult {
     }
   }
 
+  func rotate90DegCcw() -> Rotate90DegCcwResult? {
+    guard let cropRect = cropRect else { return nil }
+
+    let targetRect = cropRect.swappedAxis.fitting(in: workingRect)
+    let scale = targetRect.width / cropRect.height
+
+    animate(from: cropRect, to: targetRect, duration: 0.5)
+
+    return Rotate90DegCcwResult(
+      scale: scale,
+      fromRect: cropRect,
+      toRect: targetRect
+    )
+  }
+
   override public func draw(_ rect: CGRect) {
     guard let cropRect = self.panCropRect ?? self.cropRect else { return }
     guard let context = UIGraphicsGetCurrentContext() else { return }
@@ -68,8 +82,7 @@ struct PanGestureEndResult {
 
   public override func removeFromSuperview() {
     super.removeFromSuperview()
-    displayLink?.invalidate()
-    displayLink = nil
+    animator.invalidate()
   }
 
   func onPanGestureStart(on location: CGPoint) -> PanAction? {
@@ -81,60 +94,56 @@ struct PanGestureEndResult {
         .isInside(point: location, radius: PAN_RADIUS)
     }
 
-    panCropRect = CGRect(rect: cropRect)
-
-    return panAnchor != nil ? .crop : .move
+    if panAnchor != nil {
+      panCropRect = CGRect(rect: cropRect)
+      return .crop
+    } else {
+      return .move
+    }
   }
 
-  func onPanGestureMove(translation: CGVector) {
-    guard let panAnchor = panAnchor else { return }
+  func onPanGestureMove(translation: CGVector, withinRect imageRect: CGRect) -> Bool {
+    guard let panAnchor = panAnchor else { return true }
 
-    panCropRect?.move(anchor: panAnchor, translation: translation)
+    let movedRect = panCropRect?.moved(anchor: panAnchor, translation: translation) ?? .zero
 
-    setNeedsDisplay()
+    if movedRect.isWithin(imageRect) {
+      self.panCropRect = movedRect
+      setNeedsDisplay()
+      return true
+    } else {
+      return false
+    }
   }
 
   func onPanGestureEnded() -> PanGestureEndResult {
     guard let panAnchor = panAnchor else { return .zero }
     guard let fromRect = panCropRect else { return .zero }
 
-    let workingRect = CGRect(
-      x: frame.minX + self.padding,
-      y: frame.minY + self.padding,
-      width: frame.maxX - self.padding * 2,
-      height: frame.maxY - self.padding * 2
-    )
-    let aspectRatio = fromRect.aspectRatio
-    let leadingAxis = getLeadingAxisForZoom(rect: fromRect)
+    let toRect = fromRect.fitting(in: workingRect)
 
-    let center = frame.center
-
-    let zoomedWidth = workingRect.height * aspectRatio
-    let zoomedHeight = workingRect.width / aspectRatio
-
-    let zoomedLeft = center.x - zoomedWidth / 2
-    let zoomedTop = center.y - zoomedHeight / 2
-
-    var toRect: CGRect
-    switch (leadingAxis) {
-    case .horizontal:
-      toRect = CGRect(x: workingRect.minX, y: zoomedTop, width: workingRect.width, height: zoomedHeight)
-    case .vertical:
-      toRect = CGRect(x: zoomedLeft, y: workingRect.minY, width: zoomedWidth, height: workingRect.height)
-    }
-
-    let scale = min(toRect.width / fromRect.width, toRect.height / fromRect.height)
-
-    animateCropRect(from: fromRect, to: toRect, duration: 0.5)
+    animate(from: fromRect, to: toRect, duration: 0.5)
     panCropRect = nil
     self.panAnchor = nil
 
     return PanGestureEndResult(
-      scale: scale,
+      scale: min(toRect.width / fromRect.width, toRect.height / fromRect.height),
       anchor: panAnchor.opposite,
       fromRect: fromRect,
       toRect: toRect
     )
+  }
+
+  func animate(from: CGRect, to: CGRect, duration: TimeInterval = 0.5) {
+    cropRect = from // To avoid flickering while the animation starts
+
+    animator.animateCropRect(from: from, to: to, delegate: self, duration: duration)
+  }
+
+  func didProgressAnimation(interpolatedRect: CGRect) {
+    cropRect = interpolatedRect
+
+    setNeedsDisplay()
   }
 
   private func getLeadingAxisForZoom(rect: CGRect) -> Axis {
@@ -145,5 +154,14 @@ struct PanGestureEndResult {
     } else {
       return .horizontal
     }
+  }
+
+  private var workingRect: CGRect {
+    return CGRect(
+      x: frame.minX + self.padding,
+      y: frame.minY + self.padding,
+      width: frame.maxX - self.padding * 2,
+      height: frame.maxY - self.padding * 2
+    )
   }
 }

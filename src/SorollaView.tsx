@@ -15,7 +15,7 @@ export interface SorollaViewProps extends Omit<NativeProps, 'mode'> {}
 
 export const SorollaView = ({ style, ...props }: SorollaViewProps) => {
   const nativeRef = useRef<InstanceType<typeof NativeSorollaView> | null>(null);
-  const [mode, setMode] = useState<Mode>('none');
+  const [mode, setMode] = useState<Mode>('transform');
 
   return (
     <View

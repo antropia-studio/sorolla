@@ -57,6 +57,11 @@ using namespace facebook::react;
     [_view setMode:mode];
   }
 
+  if (oldViewProps.backgroundColor != newViewProps.backgroundColor) {
+    NSString *backgroundColor = [[NSString alloc] initWithUTF8String: newViewProps.backgroundColor.c_str()];
+    [_view setBackgroundAndOverlayColor:[self hexStringToColor:backgroundColor]];
+  }
+
   [super updateProps:props oldProps:oldProps];
 }
 
@@ -65,13 +70,40 @@ using namespace facebook::react;
   RCTSorollaViewHandleCommand(self, commandName, args); //
 }
 
-- (void)clear {
+- (void)mirrorVertically {
+  [_view mirrorVertically];
+}
+
+- (void)mirrorHorizontally {
+  [_view mirrorHorizontally];
+}
+
+- (void)rotateCcw {
+  [_view rotateCcw];
+}
+
+
+- (void)cancelTransform {
   [_view resetCurrentTransform];
 }
 
 Class<RCTComponentViewProtocol> SorollaViewCls(void)
 {
     return SorollaView.class;
+}
+
+- hexStringToColor:(NSString *)stringToConvert
+{
+    NSString *noHashString = [stringToConvert stringByReplacingOccurrencesOfString:@"#" withString:@""];
+    NSScanner *stringScanner = [NSScanner scannerWithString:noHashString];
+
+    unsigned hex;
+    if (![stringScanner scanHexInt:&hex]) return nil;
+    int r = (hex >> 16) & 0xFF;
+    int g = (hex >> 8) & 0xFF;
+    int b = (hex) & 0xFF;
+
+    return [UIColor colorWithRed:r / 255.0f green:g / 255.0f blue:b / 255.0f alpha:1.0f];
 }
 
 @end
