@@ -3,7 +3,7 @@ import UIKit
 extension CroppingOverlayView {
   func animateCropRect(from sourceRect: CGRect, to targetRect: CGRect, duration: TimeInterval = 0.5) {
     cropRect = sourceRect // To avoid flickering while the animation starts
-    
+
     displayLink = CADisplayLink(target: self, selector: #selector(updateAnimation))
 
     animationStartRect = sourceRect

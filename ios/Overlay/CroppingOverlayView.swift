@@ -67,6 +67,7 @@ struct PanGestureEndResult {
 
     let targetRect = cropRect.swappedAxis.fitting(in: workingRect)
     let scale = targetRect.width / cropRect.height
+
     animateCropRect(from: cropRect, to: targetRect, duration: 0.5)
 
     return Rotate90DegCcwResult(
@@ -101,9 +102,12 @@ struct PanGestureEndResult {
         .isInside(point: location, radius: PAN_RADIUS)
     }
 
-    panCropRect = CGRect(rect: cropRect)
-
-    return panAnchor != nil ? .crop : .move
+    if panAnchor != nil {
+      panCropRect = CGRect(rect: cropRect)
+      return .crop
+    } else {
+      return .move
+    }
   }
 
   func onPanGestureMove(translation: CGVector) {
