@@ -1,8 +1,17 @@
 import UIKit
 import AVKit
 
+
+/**
+ * This component allows consumers to apply transformations to the contained image.
+ * Internally it uses CGAffineTransforms which is CoreGraphics implementation of popular
+ * affine matrices.
+ * In Core Graphics, all affine transforms are applied using the center of the image
+ * as their anchor/pivot. That's why all the transforms inside this component take this
+ * into account and all they do is to calculate vectors and distances to the center of the
+ * image.
+ */
 class TransformableImageView: UIImageView {
-  private var translation: CGPoint = .zero
   private var rotationInDegrees: CGFloat = 0
   private var imageScale: CGVector = .one
 
@@ -28,23 +37,19 @@ class TransformableImageView: UIImageView {
      * We know we have to move the image double that (to virtually move the crop rect to the other side
      * of the reflection).
      */
-    let imageCenterToCropCenter = rect.center - contentClippingRect.center
-    let translation = (imageCenterToCropCenter * 2) / imageScale
+    let normalizedAxis = axis.rotated90Degrees(times: Int(rotationInDegrees / 90))
+    let toRectCenterVector = rect.center - contentClippingRect.center
+    let translationInAxis = toRectCenterVector
+      .rotate(degrees: -self.rotationInDegrees)
+      .projected(to: normalizedAxis) * 2
+    let translation = translationInAxis / imageScale
+    let scale = CGVector.mirrorVector(for: normalizedAxis)
 
-    switch (axis) {
-    case .horizontal:
-      self.transform = self.transform
-        .translatedBy(x: translation.dx, y: 0)
-        .scaledBy(x: -1, y: 1)
+    self.transform = self.transform
+      .translatedBy(vector: translation)
+      .scaledBy(vector: scale)
 
-      self.imageScale *= CGVector(dx: -1, dy: 1)
-    case .vertical:
-      self.transform = self.transform
-        .translatedBy(x: 0, y: translation.dy)
-        .scaledBy(x: 1, y: -1)
-
-      self.imageScale *= CGVector(dx: 1, dy: -1)
-    }
+    self.imageScale *= scale
 
     layoutIfNeeded()
   }

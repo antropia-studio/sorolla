@@ -58,4 +58,22 @@ extension CGVector {
       dy: dx * sinAngle + dy * cosAngle
     )
   }
+
+  func projected(to axis: Axis) -> CGVector {
+    switch (axis) {
+    case .horizontal:
+      return CGVector(dx: dx, dy: 0)
+    case .vertical:
+      return CGVector(dx: 0, dy: dy)
+    }
+  }
+
+  static func mirrorVector(for axis: Axis) -> CGVector {
+    switch (axis) {
+    case .horizontal:
+      return CGVector(dx: -1, dy: 1)
+    case .vertical:
+      return CGVector(dx: 1, dy: -1)
+    }
+  }
 }
