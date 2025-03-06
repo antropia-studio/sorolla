@@ -62,6 +62,9 @@ class TransformableImageView: UIImageView {
      * transforms required to run the rotation (rotation + scaling) and then calculate
      * the vector from that calculated point back to the center of the rect.
      */
+
+    // This sign operation accounts for mirroring operations and corrects the rotation value
+    let rotation = -90 * imageScale.sign
     let toRectCenterVector = rect.center - contentClippingRect.center
     let newCenterVector = toRectCenterVector.rotate(degrees: -90) * scale
     let newCenter = contentClippingRect.center + newCenterVector
@@ -70,12 +73,12 @@ class TransformableImageView: UIImageView {
     UIView.animate(withDuration: 0.5) {
       self.transform = self.transform
         .translatedBy(vector: translation.rotate(degrees: -self.rotationInDegrees))
-        .rotatedBy(degrees: -90)
+        .rotatedBy(degrees: rotation)
         .scaledBy(factor: scale)
     }
 
     imageScale *= scale
-    rotationInDegrees -= 90
+    rotationInDegrees += rotation
     layoutIfNeeded()
   }
 

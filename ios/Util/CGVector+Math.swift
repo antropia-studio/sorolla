@@ -47,6 +47,18 @@ extension CGVector {
     return CGVector(dx: lhs.dx - rhs.dx, dy: lhs.dy - rhs.dy)
   }
 
+  /**
+   * The sign property returns either +1 or -1 and it's useful to determine
+   * if a rotation must account for mirroring effects.
+   * It returns -1 if one of the vector components is negative and +1 if none or
+   * both of them are negative.
+   */
+  var sign: CGFloat {
+    if dx < 0 && dy > 0 { return -1 }
+    if dx > 0 && dy < 0 { return -1 }
+    return 1
+  }
+
   func rotate(degrees: CGFloat) -> CGVector {
     let radians = degrees * .pi / 180.0
 
