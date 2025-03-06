@@ -20,21 +20,14 @@ struct PanGestureEndResult {
   }
 }
 
-@objc public class CroppingOverlayView: UIView {
+@objc public class CroppingOverlayView: UIView, CroppingOverlayViewAnimatorDelegate {
   private lazy var imageView = UIImageView()
   private var imageRect: CGRect?
   var cropRect: CGRect?
   private var panCropRect: CGRect?
   private var panAnchor: Anchor?
   private var padding: CGFloat = 0.0
-
-  // animation
-  var displayLink: CADisplayLink?
-  var animationStartRect: CGRect?
-  var animationTargetRect: CGRect?
-  var animationProgress: CGFloat = 0
-  var animationStart: CFTimeInterval?
-  var animationDuration: TimeInterval?
+  private var animator = CroppingOverlayViewAnimator()
 
   convenience init(padding: CGFloat) {
     self.init(frame: .zero)
@@ -68,7 +61,7 @@ struct PanGestureEndResult {
     let targetRect = cropRect.swappedAxis.fitting(in: workingRect)
     let scale = targetRect.width / cropRect.height
 
-    animateCropRect(from: cropRect, to: targetRect, duration: 0.5)
+    animate(from: cropRect, to: targetRect, duration: 0.5)
 
     return Rotate90DegCcwResult(
       scale: scale,
@@ -89,8 +82,7 @@ struct PanGestureEndResult {
 
   public override func removeFromSuperview() {
     super.removeFromSuperview()
-    displayLink?.invalidate()
-    displayLink = nil
+    animator.invalidate()
   }
 
   func onPanGestureStart(on location: CGPoint) -> PanAction? {
@@ -124,7 +116,7 @@ struct PanGestureEndResult {
 
     let toRect = fromRect.fitting(in: workingRect)
 
-    animateCropRect(from: fromRect, to: toRect, duration: 0.5)
+    animate(from: fromRect, to: toRect, duration: 0.5)
     panCropRect = nil
     self.panAnchor = nil
 
@@ -134,6 +126,18 @@ struct PanGestureEndResult {
       fromRect: fromRect,
       toRect: toRect
     )
+  }
+
+  func animate(from: CGRect, to: CGRect, duration: TimeInterval = 0.5) {
+    cropRect = from // To avoid flickering while the animation starts
+
+    animator.animateCropRect(from: from, to: to, delegate: self, duration: duration)
+  }
+
+  func didProgressAnimation(interpolatedRect: CGRect) {
+    cropRect = interpolatedRect
+
+    setNeedsDisplay()
   }
 
   private func getLeadingAxisForZoom(rect: CGRect) -> Axis {
