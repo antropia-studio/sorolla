@@ -64,7 +64,8 @@ private let PADDING = 10.0
   }
 
   @objc public func setBackgroundAndOverlayColor(_ color: UIColor) {
-    
+    imageView.backgroundColor = color
+    croppingOverlayView.setOverlayColor(color)
   }
 
   @objc public func mirrorHorizontally() {

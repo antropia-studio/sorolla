@@ -27,6 +27,7 @@ struct PanGestureEndResult {
   private var panCropRect: CGRect?
   private var panAnchor: Anchor?
   private var padding: CGFloat = 0.0
+  private var overlayColor: UIColor = UIColor.black
   private var animator = CroppingOverlayViewAnimator()
 
   convenience init(padding: CGFloat) {
@@ -55,6 +56,10 @@ struct PanGestureEndResult {
     }
   }
 
+  func setOverlayColor(_ color: UIColor) {
+    self.overlayColor = color
+  }
+
   func rotate90DegCcw() -> Rotate90DegCcwResult? {
     guard let cropRect = cropRect else { return nil }
 
@@ -74,7 +79,7 @@ struct PanGestureEndResult {
     guard let cropRect = self.panCropRect ?? self.cropRect else { return }
     guard let context = UIGraphicsGetCurrentContext() else { return }
 
-    self.drawBackground(context: context, rect: cropRect)
+    self.drawBackground(context: context, rect: cropRect, color: overlayColor)
     self.drawVerticalLines(context: context, rect: cropRect)
     self.drawHorizontalLines(context: context, rect: cropRect)
     self.drawAnchors(context: context, rect: cropRect)

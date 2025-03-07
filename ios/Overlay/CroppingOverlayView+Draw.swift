@@ -93,8 +93,8 @@ private let MID_ANCHOR_LENGTH = ANCHOR_LENGTH / 2.0
     edgesPath.stroke()
   }
 
-  func drawBackground(context: CGContext, rect: CGRect) {
-    UIColor.init(red: 0, green: 0, blue: 0, alpha: 0.5).setFill()
+  func drawBackground(context: CGContext, rect: CGRect, color: UIColor) {
+    color.withAlphaComponent(0.5).setFill()
 
     context.addRect(CGRect(x: 0, y: 0, width: bounds.width, height: rect.minY))
     context.addRect(CGRect(x: 0, y: rect.minY, width: rect.minX, height: rect.height))
