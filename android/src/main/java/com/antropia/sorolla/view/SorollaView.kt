@@ -62,6 +62,19 @@ class SorollaView : RelativeLayout, Geometer, ViewAnimator {
     onModeChange(mode)
   }
 
+  fun acceptEdition() {
+    val reactContext = context as ReactContext
+    val surfaceId = UIManagerHelper.getSurfaceId(reactContext)
+    val eventDispatcher = UIManagerHelper.getEventDispatcherForReactTag(reactContext, id)
+
+    val uri = imageView.saveToFile(clippingArea = croppingOverlayView.cropRect ?: RectF())
+    val payload = Arguments.createMap()
+    payload.putString("uri", uri)
+
+    val event = OnEditFinishEvent(surfaceId, id, payload)
+    eventDispatcher?.dispatchEvent(event)
+  }
+
   fun rotateCcw() {
     val result = croppingOverlayView.rotateCcw()
     result?.let {
@@ -117,18 +130,5 @@ class SorollaView : RelativeLayout, Geometer, ViewAnimator {
         imageView.moveImageWithinBoundaries(croppingRect)
       }
     })
-  }
-
-  private fun finishEdition() {
-    val reactContext = context as ReactContext
-    val surfaceId = UIManagerHelper.getSurfaceId(reactContext)
-    val eventDispatcher = UIManagerHelper.getEventDispatcherForReactTag(reactContext, id)
-
-    val uri = imageView.saveToFile(clippingArea = croppingOverlayView.cropRect ?: RectF())
-    val payload = Arguments.createMap()
-    payload.putString("uri", uri)
-
-    val event = OnEditFinishEvent(surfaceId, id, payload)
-    eventDispatcher?.dispatchEvent(event)
   }
 }

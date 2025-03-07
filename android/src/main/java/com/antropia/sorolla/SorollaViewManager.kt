@@ -52,6 +52,10 @@ class SorollaViewManager : SimpleViewManager<SorollaView>(),
     view?.setBackgroundColor(Color.parseColor(rawBackgroundColor))
   }
 
+  override fun acceptEdition(view: SorollaView?) {
+    view?.acceptEdition()
+  }
+
   override fun mirrorHorizontally(view: SorollaView?) {
     view?.mirror(Axis.HORIZONTAL)
   }
