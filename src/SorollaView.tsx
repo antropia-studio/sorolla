@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Dimensions, View } from 'react-native';
+import { Dimensions, Pressable, Text, View } from 'react-native';
 
 import { IconButton } from './component/IconButton';
 import { Tools } from './component/tool';
@@ -15,7 +15,7 @@ export interface SorollaViewProps extends Omit<NativeProps, 'mode'> {}
 
 export const SorollaView = ({ style, ...props }: SorollaViewProps) => {
   const nativeRef = useRef<InstanceType<typeof NativeSorollaView> | null>(null);
-  const [mode, setMode] = useState<Mode>('transform');
+  const [mode, setMode] = useState<Mode>('none');
 
   return (
     <View
@@ -43,57 +43,84 @@ export const SorollaView = ({ style, ...props }: SorollaViewProps) => {
 
       <View
         style={{
-          flexDirection: 'row',
+          alignItems: 'center',
+          flexDirection: 'column',
           gap: 16,
-          justifyContent: 'space-between',
-          paddingHorizontal: 8,
+          justifyContent: 'center',
         }}
       >
-        {mode === 'transform' && (
-          <IconButton
-            onPress={() => {
-              if (nativeRef.current) {
-                Commands.cancelTransform(nativeRef.current);
-              }
-              setMode('none');
-            }}
-          >
-            <Icon.Cancel />
-          </IconButton>
-        )}
+        <View
+          style={{
+            flexDirection: 'row',
+            gap: 16,
+            justifyContent: 'space-between',
+            paddingHorizontal: 8,
+          }}
+        >
+          {mode === 'transform' && (
+            <IconButton
+              onPress={() => {
+                if (nativeRef.current) {
+                  Commands.cancelTransform(nativeRef.current);
+                }
+                setMode('none');
+              }}
+            >
+              <Icon.Cancel />
+            </IconButton>
+          )}
 
-        {mode === 'none' ? (
-          <Tools.Edit
-            onPaintPress={() => {}}
-            onSettingsPress={() => {}}
-            onTransformPress={() => setMode('transform')}
-          />
-        ) : (
-          <Tools.Transform
-            onAspectRatioPress={() => {}}
-            onMirrorHorizontallyPress={() => {
-              if (nativeRef.current) {
-                Commands.mirrorHorizontally(nativeRef.current);
-              }
-            }}
-            onMirrorVerticallyPress={() => {
-              if (nativeRef.current) {
-                Commands.mirrorVertically(nativeRef.current);
-              }
-            }}
-            onRotateCcwPress={() => {
-              if (nativeRef.current) {
-                Commands.rotateCcw(nativeRef.current);
-              }
-            }}
-          />
-        )}
+          {mode === 'none' ? (
+            <Tools.Edit
+              onPaintPress={() => {}}
+              onSettingsPress={() => {}}
+              onTransformPress={() => setMode('transform')}
+            />
+          ) : (
+            <Tools.Transform
+              onAspectRatioPress={() => {}}
+              onMirrorHorizontallyPress={() => {
+                if (nativeRef.current) {
+                  Commands.mirrorHorizontally(nativeRef.current);
+                }
+              }}
+              onMirrorVerticallyPress={() => {
+                if (nativeRef.current) {
+                  Commands.mirrorVertically(nativeRef.current);
+                }
+              }}
+              onRotateCcwPress={() => {
+                if (nativeRef.current) {
+                  Commands.rotateCcw(nativeRef.current);
+                }
+              }}
+            />
+          )}
 
-        {mode === 'transform' && (
-          <IconButton onPress={() => setMode('none')}>
-            <Icon.Accept />
-          </IconButton>
-        )}
+          {mode === 'transform' && (
+            <IconButton onPress={() => setMode('none')}>
+              <Icon.Accept />
+            </IconButton>
+          )}
+        </View>
+
+        <Pressable
+          onPress={() => {
+            if (nativeRef.current) {
+              Commands.acceptEdition(nativeRef.current);
+            }
+          }}
+          style={{
+            backgroundColor: '#0130FF',
+            borderRadius: 8,
+            paddingHorizontal: 16,
+            paddingVertical: 8,
+          }}
+        >
+          <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>
+            Accept
+          </Text>
+        </Pressable>
       </View>
     </View>
   );

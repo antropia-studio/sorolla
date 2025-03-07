@@ -11,9 +11,7 @@ import {
 import { launchImageLibrary } from 'react-native-image-picker';
 
 export default function App() {
-  const [imageUri, setImageUri] = useState<string | undefined>(
-    'https://images.unsplash.com/photo-1740946121655-b2370d0e1bbe?q=100' // For debugging
-  );
+  const [imageUri, setImageUri] = useState<string | undefined>();
   const [editedImageUri, setEditedImageUri] = useState<string | undefined>();
 
   const pickImage = useCallback(async () => {
@@ -43,13 +41,13 @@ export default function App() {
             setEditedImageUri(undefined);
             setImageUri(undefined);
           }}
-          style={{ flex: 1, height: '100%', width: '100%' }}
+          style={{ flex: 1 }}
         >
           <Image
-            height={Dimensions.get('screen').height}
+            height={Dimensions.get('screen').height * 0.8}
             source={{ uri: editedImageUri }}
             style={{ resizeMode: 'contain' }}
-            width={Dimensions.get('screen').width}
+            width={Dimensions.get('screen').width * 0.8}
           />
         </Pressable>
       ) : imageUri ? (

@@ -36,6 +36,11 @@ using namespace facebook::react;
 
     _view = [[SwSorollaView alloc] init];
 
+    __weak SorollaView *weakSelf = self;
+    _view.onEditFinish = ^(NSString* uri) {
+      [weakSelf handleOnEditFinish:uri];
+    };
+
     self.contentView = _view;
   }
 
@@ -82,9 +87,12 @@ using namespace facebook::react;
   [_view rotateCcw];
 }
 
-
 - (void)cancelTransform {
   [_view resetCurrentTransform];
+}
+
+- (void)acceptEdition {
+  [_view acceptEdition];
 }
 
 Class<RCTComponentViewProtocol> SorollaViewCls(void)
@@ -104,6 +112,16 @@ Class<RCTComponentViewProtocol> SorollaViewCls(void)
     int b = (hex) & 0xFF;
 
     return [UIColor colorWithRed:r / 255.0f green:g / 255.0f blue:b / 255.0f alpha:1.0f];
+}
+
+- (void)handleOnEditFinish:(NSString *)uri
+{
+  if(!_eventEmitter) {
+    return;
+  }
+
+  SorollaViewEventEmitter::OnEditFinish event = {.uri = [uri UTF8String]};
+  std::dynamic_pointer_cast<const SorollaViewEventEmitter>(self->_eventEmitter)->onEditFinish(event);
 }
 
 @end

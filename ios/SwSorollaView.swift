@@ -10,6 +10,7 @@ private let PADDING = 10.0
   private var panGesture: UIPanGestureRecognizer!
   private var panAction: PanAction? = nil
   private var lastPanGestureLocation: CGPoint?
+  @objc public var onEditFinish: ((String) -> Void)?
 
   override init(frame: CGRect) {
     super.init(frame: frame)
@@ -32,13 +33,10 @@ private let PADDING = 10.0
         DispatchQueue.main.async {
           self.imageView.image = image
           self.imageView.reset()
-          self.croppingOverlayView.setImageRect(rect: self.imageView.contentClippingRect)
 
-          self.setMode("transform")
-
-//          DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 1) {
-//            self.rotateCcw()
-//          }
+          DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            self.croppingOverlayView.setImageRect(rect: self.imageView.contentClippingRect)
+          }
         }
       }
     }
@@ -92,6 +90,22 @@ private let PADDING = 10.0
   @objc public func resetCurrentTransform() {
     self.imageView.reset(animated: true)
     self.croppingOverlayView.setImageRect(rect: self.imageView.contentClippingRect, update: false)
+  }
+
+  @objc public func acceptEdition() {
+    /**
+     * Unfortunately, if we send here the imageView itself to be rendered, all the transforms
+     * are lost in the render process. That's why we need to send the parent (self) and to
+     * do it cleanly, we hide the overlay.
+     */
+    let wasOverlayHidden = croppingOverlayView.isHidden
+    croppingOverlayView.isHidden = true
+    let url = renderViewToFile(cropRect: croppingOverlayView.cropRect!)
+    croppingOverlayView.isHidden = wasOverlayHidden
+
+    guard let url = url else { return }
+
+    self.onEditFinish?(url.absoluteString)
   }
 
   private func createViews() {

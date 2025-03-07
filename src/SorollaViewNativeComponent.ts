@@ -11,6 +11,9 @@ import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNati
 export type Mode = 'none' | 'transform';
 
 export interface NativeCommands {
+  acceptEdition: (
+    viewRef: React.ElementRef<HostComponent<NativeProps>>
+  ) => void;
   cancelTransform: (
     viewRef: React.ElementRef<HostComponent<NativeProps>>
   ) => void;
@@ -25,6 +28,7 @@ export interface NativeCommands {
 
 export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
   supportedCommands: [
+    'acceptEdition',
     'cancelTransform',
     'mirrorHorizontally',
     'mirrorVertically',

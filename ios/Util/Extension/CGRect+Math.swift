@@ -16,6 +16,15 @@ extension CGRect {
   var center: CGPoint { return CGPoint(x: midX, y: midY) }
 
   var aspectRatio: CGFloat { return width / height }
+  var atZero: CGRect { return CGRect(x: 0, y: 0, width: width, height: height) }
+
+  static func *(lhs: CGRect, factor: CGFloat) -> CGRect {
+    return CGRect(x: lhs.minX * factor, y: lhs.minY * factor, width: lhs.width * factor, height: lhs.height * factor)
+  }
+
+  static func /(lhs: CGRect, factor: CGFloat) -> CGRect {
+    return CGRect(x: lhs.minX / factor, y: lhs.minY / factor, width: lhs.width / factor, height: lhs.height / factor)
+  }
 
   func getAnchorPoint(_ anchor: Anchor) -> CGPoint {
     switch anchor {
@@ -64,6 +73,10 @@ extension CGRect {
     }
 
     return toRect
+  }
+
+  func translated(dx: CGFloat, dy: CGFloat) -> CGRect {
+    return CGRect(x: minX + dx, y: minY + dy, width: width, height: height)
   }
 
   func moved(
