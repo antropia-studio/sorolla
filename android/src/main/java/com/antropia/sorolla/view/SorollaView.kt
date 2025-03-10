@@ -1,6 +1,8 @@
 package com.antropia.sorolla.view
 
 import android.content.Context
+import android.graphics.ColorMatrix
+import android.graphics.ColorMatrixColorFilter
 import android.graphics.Rect
 import android.graphics.RectF
 import android.os.Build
@@ -12,6 +14,7 @@ import com.antropia.sorolla.event.OnEditFinishEvent
 import com.antropia.sorolla.mixin.Geometer
 import com.antropia.sorolla.mixin.ViewAnimator
 import com.antropia.sorolla.util.Axis
+import com.antropia.sorolla.util.ImageSettings
 import com.antropia.sorolla.util.Mode
 import com.antropia.sorolla.util.RectAnchor
 import com.antropia.sorolla.view.overlay.CroppingOverlayView
@@ -62,6 +65,26 @@ class SorollaView : RelativeLayout, Geometer, ViewAnimator {
     onModeChange(mode)
   }
 
+  fun setImageSettings(settings: ImageSettings) {
+    val brightness = settings.brightness.toFloat() * 255f // Ranging from -255f to 255f
+    val contrast = settings.contrast.toFloat() + 1f // Ranging from 0f to 2f
+    val saturation = settings.saturation.toFloat() + 1f // Ranging from 0f to 2f
+
+    println("$brightness, $contrast, $saturation")
+    val colorMatrix = ColorMatrix(
+      floatArrayOf(
+        contrast, 0f, 0f, 0f, brightness,
+        0f, contrast, 0f, 0f, brightness,
+        0f, 0f, contrast, 0f, brightness,
+        0f, 0f, 0f, 1f, 0f
+      )
+    )
+    val saturationMatrix = ColorMatrix().apply { setSaturation(saturation) }
+    colorMatrix.postConcat(saturationMatrix)
+
+    imageView.colorFilter = ColorMatrixColorFilter(ColorMatrix(colorMatrix))
+  }
+
   fun acceptEdition() {
     val reactContext = context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(reactContext)
@@ -100,7 +123,7 @@ class SorollaView : RelativeLayout, Geometer, ViewAnimator {
 
   private fun onModeChange(mode: Mode) {
     when (mode) {
-      Mode.NONE -> {
+      Mode.NONE, Mode.SETTINGS -> {
         croppingOverlayView.fadeOut()
       }
 

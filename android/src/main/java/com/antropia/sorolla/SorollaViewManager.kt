@@ -1,9 +1,11 @@
 package com.antropia.sorolla
 
-import android.graphics.Color
+import androidx.core.graphics.toColorInt
 import com.antropia.sorolla.util.Axis
+import com.antropia.sorolla.util.ImageSettings
 import com.antropia.sorolla.util.Mode
 import com.antropia.sorolla.view.SorollaView
+import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
@@ -49,7 +51,20 @@ class SorollaViewManager : SimpleViewManager<SorollaView>(),
   override fun setBackgroundColor(view: SorollaView?, value: String?) {
     val rawBackgroundColor = value ?: return
 
-    view?.setBackgroundColor(Color.parseColor(rawBackgroundColor))
+    view?.setBackgroundColor(rawBackgroundColor.toColorInt())
+  }
+
+  @ReactProp(name = "settings")
+  override fun setSettings(view: SorollaView?, value: ReadableMap?) {
+    val map = value ?: return
+
+    val imageSettings = ImageSettings(
+      brightness = map.getDouble("brightness"),
+      contrast = map.getDouble("contrast"),
+      saturation = map.getDouble("saturation")
+    )
+
+    view?.setImageSettings(imageSettings)
   }
 
   override fun acceptEdition(view: SorollaView?) {
