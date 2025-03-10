@@ -15,6 +15,7 @@ import AVKit
  * matrices.
  */
 class TransformableImageView: UIImageView {
+  private var originalCIImage: CIImage?
   private var translation: CGVector = .zero
   private var rotationInDegrees: CGFloat = 0
   private var imageScale: CGVector = .one
@@ -56,7 +57,34 @@ class TransformableImageView: UIImageView {
     applyTransform(animated: true)
   }
 
+  func setSettings(brightness: Float, saturation: Float, contrast: Float) {
+    guard let image = image else { return }
+
+    if (originalCIImage == nil) {
+      originalCIImage = CIImage(
+        image: image,
+        options: [
+          .applyOrientationProperty: true,
+            .properties: [kCGImagePropertyOrientation: CGImagePropertyOrientation(image.imageOrientation).rawValue]
+        ]
+      )
+    }
+
+    guard let ciImage = originalCIImage else { return }
+
+    let filter = CIFilter(name: "CIColorControls")!
+    print(brightness, saturation, contrast)
+    filter.setValue(ciImage, forKey: kCIInputImageKey)
+    filter.setValue(brightness, forKey: kCIInputBrightnessKey)
+    filter.setValue(2 * contrast.normalize(min: -1, max: 1), forKey: kCIInputContrastKey)
+    filter.setValue(2 * saturation.normalize(min: -1, max: 1), forKey: kCIInputSaturationKey)
+    guard let outputImage = filter.outputImage else { return }
+
+    self.image = UIImage(ciImage: outputImage)
+  }
+
   func reset(animated: Bool = false) {
+    self.originalCIImage = nil
     self.translation = .zero
     self.imageScale = CGVector(dx: 1.0, dy: 1.0)
     self.rotationInDegrees = 0

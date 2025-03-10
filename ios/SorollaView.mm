@@ -62,6 +62,14 @@ using namespace facebook::react;
     [_view setMode:mode];
   }
 
+  if (oldViewProps.settings.brightness != newViewProps.settings.brightness ||
+      oldViewProps.settings.saturation != newViewProps.settings.saturation ||
+      oldViewProps.settings.contrast != newViewProps.settings.contrast) {
+    [_view setSettingsWithBrightness:newViewProps.settings.brightness
+                          saturation:newViewProps.settings.saturation
+                            contrast:newViewProps.settings.contrast];
+  }
+
   if (oldViewProps.backgroundColor != newViewProps.backgroundColor) {
     NSString *backgroundColor = [[NSString alloc] initWithUTF8String: newViewProps.backgroundColor.c_str()];
     [_view setBackgroundAndOverlayColor:[self hexStringToColor:backgroundColor]];

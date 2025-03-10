@@ -60,7 +60,13 @@ private let PADDING = 10.0
       UIView.animate(withDuration: 0.2, animations: {
         self.croppingOverlayView.alpha = 1
       })
+    case .settings:
+      break
     }
+  }
+
+  @objc public func setSettings(brightness: Float, saturation: Float, contrast: Float) {
+    imageView.setSettings(brightness: brightness, saturation: saturation, contrast: contrast)
   }
 
   @objc public func setBackgroundAndOverlayColor(_ color: UIColor) {

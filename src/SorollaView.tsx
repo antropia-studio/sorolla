@@ -1,21 +1,41 @@
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Dimensions, Pressable, Text, View } from 'react-native';
+
+import type { SettingsName } from './component/tool/SettingsTools';
+import type { Mode } from './util/Mode';
 
 import { IconButton } from './component/IconButton';
 import { Tools } from './component/tool';
 import { Icon } from './icon';
 import {
   Commands,
-  type Mode,
   type NativeProps,
   default as NativeSorollaView,
 } from './SorollaViewNativeComponent';
 
-export interface SorollaViewProps extends Omit<NativeProps, 'mode'> {}
+export interface SorollaViewProps
+  extends Omit<NativeProps, 'mode' | 'settings'> {}
 
 export const SorollaView = ({ style, ...props }: SorollaViewProps) => {
   const nativeRef = useRef<InstanceType<typeof NativeSorollaView> | null>(null);
   const [mode, setMode] = useState<Mode>('none');
+  const [brightness, setBrightness] = useState(0);
+  const [saturation, setSaturation] = useState(0);
+  const [contrast, setContrast] = useState(0);
+
+  const onSettingsChange = useCallback((name: SettingsName, value: number) => {
+    switch (name) {
+      case 'Brightness':
+        setBrightness(value);
+        break;
+      case 'Contrast':
+        setContrast(value);
+        break;
+      case 'Saturation':
+        setSaturation(value);
+        break;
+    }
+  }, []);
 
   return (
     <View
@@ -31,9 +51,10 @@ export const SorollaView = ({ style, ...props }: SorollaViewProps) => {
       <NativeSorollaView
         mode={mode}
         ref={nativeRef}
+        settings={{ brightness, contrast, saturation }}
         style={[
           {
-            height: Dimensions.get('screen').height * 0.7,
+            height: Dimensions.get('screen').height * 0.5,
             width: Dimensions.get('screen').width,
           },
           style,
@@ -57,7 +78,7 @@ export const SorollaView = ({ style, ...props }: SorollaViewProps) => {
             paddingHorizontal: 8,
           }}
         >
-          {mode === 'transform' && (
+          {(mode === 'transform' || mode === 'settings') && (
             <IconButton
               onPress={() => {
                 if (nativeRef.current) {
@@ -70,34 +91,31 @@ export const SorollaView = ({ style, ...props }: SorollaViewProps) => {
             </IconButton>
           )}
 
-          {mode === 'none' ? (
-            <Tools.Edit
-              onPaintPress={() => {}}
-              onSettingsPress={() => {}}
-              onTransformPress={() => setMode('transform')}
-            />
-          ) : (
-            <Tools.Transform
-              onAspectRatioPress={() => {}}
-              onMirrorHorizontallyPress={() => {
-                if (nativeRef.current) {
-                  Commands.mirrorHorizontally(nativeRef.current);
-                }
-              }}
-              onMirrorVerticallyPress={() => {
-                if (nativeRef.current) {
-                  Commands.mirrorVertically(nativeRef.current);
-                }
-              }}
-              onRotateCcwPress={() => {
-                if (nativeRef.current) {
-                  Commands.rotateCcw(nativeRef.current);
-                }
-              }}
-            />
-          )}
+          <Tools
+            mode={mode}
+            onAspectRatioPress={() => {}}
+            onMirrorHorizontallyPress={() => {
+              if (nativeRef.current) {
+                Commands.mirrorHorizontally(nativeRef.current);
+              }
+            }}
+            onMirrorVerticallyPress={() => {
+              if (nativeRef.current) {
+                Commands.mirrorVertically(nativeRef.current);
+              }
+            }}
+            onPaintPress={() => {}}
+            onRotateCcwPress={() => {
+              if (nativeRef.current) {
+                Commands.rotateCcw(nativeRef.current);
+              }
+            }}
+            onSettingsChange={onSettingsChange}
+            onSettingsPress={() => setMode('settings')}
+            onTransformPress={() => setMode('transform')}
+          />
 
-          {mode === 'transform' && (
+          {(mode === 'transform' || mode === 'settings') && (
             <IconButton onPress={() => setMode('none')}>
               <Icon.Accept />
             </IconButton>

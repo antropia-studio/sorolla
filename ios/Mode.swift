@@ -7,4 +7,5 @@ import Foundation
 enum Mode: String {
   case none
   case transform
+  case settings
 }
